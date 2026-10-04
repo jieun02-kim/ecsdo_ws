@@ -7,6 +7,8 @@ IgH EtherCAT Master에서 **SDO 목록(사전) 읽기**와 **SDO 값 하나 읽�
 - 값은 `ethercat upload`처럼 타입을 확인하고 숫자/문자열로 해석해 준다.
 - 보조 모듈 `ecsdo_util`: SDO 목록 JSON 덤프, **이름으로 값 읽기**(제어 코드용 표). 핵심 라이브러리는 이 모듈 없이도 쓸 수 있다.
 
+> 처음이라면 IgH EtherCAT Master부터 설치한다: [`../IGH_SETUP.md`](../IGH_SETUP.md)
+
 ## API
 
 | 함수 | 하는 일 |
