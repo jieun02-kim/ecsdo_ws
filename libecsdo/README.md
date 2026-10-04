@@ -149,19 +149,21 @@ upload 반환값: `OK`, `ERR_ABORT`(장치가 거부, `abort_code` → `ecsdo_ab
 (`upload_value`만) `ERR_TYPE_MISMATCH`, `ERR_UNKNOWN_TYPE`.
 항목당 약 10 ms 걸리므로 실시간 루프에서 쓰지 말 것.
 
-## 빌드와 설치 (작업 공간 `~/ecsdo_ws`)
+## 빌드와 설치 (작업 공간 `ecsdo_ws`)
 
 ```
-~/ecsdo_ws/
+ecsdo_ws/
   libecsdo/   소스 (이 디렉터리)
-  build/      빌드
-  install/    설치: include/ecsdo/*.h, lib/libecsdo*.a, lib/cmake/ecsdo/, bin/ecsdo_cli
+  build/      빌드 (git 제외)
+  install/    설치 (git 제외): include/ecsdo/*.h, lib/libecsdo*.a, lib/cmake/ecsdo/, bin/ecsdo_cli
 ```
 
 ```sh
-cd ~/ecsdo_ws
-cmake -S libecsdo -B build -DIGH_SOURCE_DIR=/home/jieun/ethercat \
-      -DCMAKE_INSTALL_PREFIX=$HOME/ecsdo_ws/install
+git clone https://github.com/jieun02-kim/ecsdo_ws.git
+cd ecsdo_ws
+# <IgH 소스 경로>: ./configure를 마친 IgH EtherCAT Master 소스 트리 (master/ioctl.h, config.h 필요)
+cmake -S libecsdo -B build -DIGH_SOURCE_DIR=<IgH 소스 경로> \
+      -DCMAKE_INSTALL_PREFIX=$PWD/install
 cmake --build build
 (cd build && ctest)          # 장치 없이 테스트 (ctest -T memcheck: valgrind)
 cmake --install build
@@ -174,7 +176,7 @@ find_package(ecsdo 2 REQUIRED CONFIG)
 target_link_libraries(my_app PRIVATE ecsdo::ecsdo_util ecsdo::ecsdo)
 ```
 ```sh
-cmake -S . -B build -DCMAKE_PREFIX_PATH=$HOME/ecsdo_ws/install
+cmake -S . -B build -DCMAKE_PREFIX_PATH=<ecsdo_ws 경로>/install
 ```
 
 IgH를 업데이트하면 다시 빌드할 것 (ioctl 버전이 다르면 `ecsdo_open`이 `ECSDO_ERR_VERSION`).

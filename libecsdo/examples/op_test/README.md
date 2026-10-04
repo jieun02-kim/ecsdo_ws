@@ -19,8 +19,8 @@ libecsdo v2로 알아낸 정보만으로 버스를 OP까지 올리는 테스트.
 
 ```sh
 # libecsdo 최상위에서 같이 빌드된다 (libethercat이 있을 때만, ECSDO_BUILD_OP_TEST=ON 기본)
-cd ~/ecsdo_ws
-cmake -S libecsdo -B build -DIGH_SOURCE_DIR=/home/jieun/ethercat
+cd ecsdo_ws
+cmake -S libecsdo -B build -DIGH_SOURCE_DIR=<IgH 소스 경로>
 cmake --build build
 cd build/examples/op_test       # wanted.conf가 복사되어 있음
 
