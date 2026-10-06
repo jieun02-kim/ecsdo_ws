@@ -33,12 +33,16 @@ ecsdo_cli -p 1 get "Controlword" "Statusword" "Target Position" "Position Actual
 ./op_test                 # 1~4만 (장치에 쓰기 없음)
 ./op_test --activate      # OP까지 (출력 0, 제어 없음)
 ./op_test --pdo other.conf   # 다른 PDO 항목 목록
-# 매 실행마다 2~4단계에서 읽고 만든 것을 ./op_test.json에 저장 (activate 전, 덮어씀)
-./op_test --save read.json   # 다른 파일로
-./op_test --no-save          # 저장 안 함
+# 매 실행마다 저장 (덮어씀): 1단계 후 SDO 사전 전체 → ./op_test_dict.json,
+# 4단계 후 읽고 만든 것 → ./op_test.json (둘 다 activate 전)
+./op_test --save my.json     # 다른 파일로
+./op_test --dict d.json      # 사전 전체 덤프 위치 (기본 ./op_test_dict.json, ecsdo_cli scan 형식)
+./op_test --no-save          # JSON 둘 다 저장 안 함
 ./op_test --sdo other.conf   # 식별용 SDO 목록 (기본 sdo.conf, 없으면 건너뜀)
 ./op_test --sine 0        # 축 0만 사인파 (CSP, 0.25 rev, 주기 10 s, 3주기)
 ./op_test --sine 0,1,3    # 여러 축
+./op_test --sine 0 --print 500   # OP 동안 500 ms마다 매핑된 값 전부 (슬레이브당 한 줄)
+./op_test --activate --print 100
 ```
 
 `sdo.conf`: 시작할 때 SDO로 한 번 읽는 장치·모터 식별 값 (Device Type/Name, 모터 ID, 엔코더,

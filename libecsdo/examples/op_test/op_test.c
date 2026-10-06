@@ -4,10 +4,12 @@
  * Without --sine there is NO CONTROL: all outputs stay zero; inputs are
  * only read. --sine LIST moves the listed axes (CiA402 drives, CSP).
  *
- *   op_test [--pdo pdo.conf] [--sdo sdo.conf] [--save FILE | --no-save]
- *           [--activate] [--sine AXIS[,AXIS...]]
+ *   op_test [--pdo pdo.conf] [--sdo sdo.conf] [--save FILE] [--dict FILE]
+ *           [--no-save] [--activate] [--sine AXIS[,AXIS...]] [--print MS]
  *
- * 1. libecsdo     wait until the master has every dictionary.
+ * 1. libecsdo     wait until the master has every dictionary; write all
+ *                 of them to op_test_dict.json ("ecsdo-dict", as
+ *                 ecsdo_cli scan; --dict FILE: elsewhere).
  * 2. libethercat  reserve the master; slave count and identity.
  * 3. libecsdo     sdo.conf names -> SDO values read once (drive and motor
  *                 identification; not mapped; default file optional).
@@ -19,7 +21,7 @@
  *                 (ecrt_slave_config_pdos), register the entries
  *                 -> process data offsets.
  *    JSON         what steps 2-4 read and built is written to op_test.json
- *                 (--save FILE: elsewhere, --no-save: not at all), before
+ *                 (--save FILE: elsewhere, --no-save: neither JSON), before
  *                 activating, so also without --activate.
  * 5. --activate   activate, clear outputs, cycle 1 ms until all slaves are
  *                 OP, hold 1 s, print process data decoded with the
@@ -33,6 +35,8 @@
  *                 from "Encoder Resolution" (SDO); mode CSP is set with a
  *                 startup SDO (0x6060 = 8). Fault, following error, lost
  *                 working counter or Ctrl+C -> quick stop.
+ *    --print MS   (with --activate/--sine) also print the process data
+ *                 every MS ms while OP, one line per slave.
  * Without --activate nothing is written to the slaves. With it, the master
  * writes the new mapping (0x1C12/0x1C13, 0x1600/0x1A00) in PREOP.
  */
@@ -175,6 +179,22 @@ static void print_pd(const ecsdo_item_t *it, const uint8_t *data)
         printf("%g", v.f);
     else
         printf("(%s)", ecsdo_type_name(it->data_type));
+}
+
+/** --print: all registered entries of one slave on one line. */
+static void print_pd_line(const slave_t *s, size_t i, int n_pdo,
+        const uint8_t *pd, double t)
+{
+    int k;
+
+    printf("    %7.3f s slave %zu", t, i);
+    for (k = 0; k < n_pdo; k++) {
+        if (s->offset[k] < 0)
+            continue;
+        printf(" | %s ", s->items[k].selector);
+        print_pd(&s->items[k], pd + s->offset[k]);
+    }
+    printf("\n");
 }
 
 /** --sine list "0,1,3" -> slaves[].axis. Returns the count or -1. */
@@ -455,11 +475,11 @@ int main(int argc, char **argv)
     static char sdo_names[MAX_SDO][ECSDO_STRING_SIZE * 2];
     static slave_t slaves[MAX_SLAVES];
     const char *pdo_conf = "pdo.conf", *sine_list = NULL;
-    const char *save = "op_test.json";
+    const char *save = "op_test.json", *dict = "op_test_dict.json";
     const char *sdo_conf = "sdo.conf";
     int sdo_given = 0, n_sdo = 0;
     int activate = 0, n_pdo, a, k, rc = 1, reached = 0, done = 0;
-    long wc_bad = 0, wc_cycles = 0;
+    long wc_bad = 0, wc_cycles = 0, print_ms = 0;
     sine_t sine = { SINE_ENABLING, 0, 0 };
     size_t n_slaves, i, total = 0;
     ec_master_t *master = NULL;
@@ -480,15 +500,23 @@ int main(int argc, char **argv)
             sdo_given = 1;
         } else if (!strcmp(argv[a], "--save") && a + 1 < argc)
             save = argv[++a];
+        else if (!strcmp(argv[a], "--dict") && a + 1 < argc)
+            dict = argv[++a];
         else if (!strcmp(argv[a], "--no-save"))
-            save = NULL;
+            save = dict = NULL;
         else if (!strcmp(argv[a], "--sine") && a + 1 < argc) {
             sine_list = argv[++a];
             activate = 1;
+        } else if (!strcmp(argv[a], "--print") && a + 1 < argc) {
+            print_ms = strtol(argv[++a], NULL, 10);
+            if (print_ms <= 0) {
+                fprintf(stderr, "--print: MS must be > 0\n");
+                return 2;
+            }
         } else {
             fprintf(stderr, "usage: %s [--pdo pdo.conf] [--sdo sdo.conf] "
-                    "[--save FILE | --no-save] [--activate] "
-                    "[--sine AXIS[,AXIS...]]\n",
+                    "[--save FILE] [--dict FILE] [--no-save] [--activate] "
+                    "[--sine AXIS[,AXIS...]] [--print MS]\n",
                     argv[0]);
             return 2;
         }
@@ -511,6 +539,19 @@ int main(int argc, char **argv)
     printf("[1] libecsdo: wait for dictionaries\n");
     if (ecsdo_wait_ready(ctx, 30000) == ECSDO_ERR_TIMEOUT)
         printf("    warning: some dictionaries not complete\n");
+    if (dict) {
+        /* Reference only: a failure here does not stop the test. */
+        FILE *f = fopen(dict, "w");
+        int ret = f ? ecsdo_dump_dict_json(ctx, 0, f) : ECSDO_ERR_WRITE;
+
+        if (f && fclose(f) && ret == ECSDO_OK)
+            ret = ECSDO_ERR_WRITE;
+        if (ret == ECSDO_OK)
+            printf("    saved %s (all dictionaries)\n", dict);
+        else
+            printf("    warning: %s not written: %s\n", dict,
+                    ecsdo_util_strerror(ret));
+    }
 
     /* ---- 2. libethercat: master's scan ------------------------------- */
     printf("\n[2] libethercat: slaves from the master\n");
@@ -758,6 +799,12 @@ int main(int argc, char **argv)
                     ds.wc_state == EC_WC_COMPLETE);
         if (done)
             break;
+        /* After sine_cycle: outputs as they are sent in this cycle. */
+        if (reached && print_ms && (wc_cycles - 1) % print_ms == 0) {
+            for (i = 0; i < n_slaves; i++)
+                print_pd_line(&slaves[i], i, n_pdo, pd,
+                        (double) (wc_cycles - 1) * CYCLE_NS / 1e9);
+        }
 
         ecrt_domain_queue(domain);       /* outputs: zero unless --sine */
         ecrt_master_send(master);
