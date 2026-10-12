@@ -32,6 +32,7 @@ typedef struct {
     uint8_t al_state;
     uint8_t error_flag;
     uint16_t sdo_count;
+    uint32_t sii_nwords;
     char name[ECSDO_STRING_SIZE];
     char order[ECSDO_STRING_SIZE];
     char group[ECSDO_STRING_SIZE];
@@ -50,9 +51,6 @@ typedef struct {
     uint8_t write_access[ECSDO_ACCESS_COUNT];
     char description[ECSDO_STRING_SIZE];
 } ecsdo_io_sdo_entry_t;
-
-/** Mailbox protocol bit for CoE (ETG.1000.6). */
-#define ECSDO_MBOX_COE 0x04
 
 int ecsdo_io_open(unsigned int master_index, int read_write, int *fd);
 void ecsdo_io_close(int fd);
@@ -74,6 +72,11 @@ int ecsdo_io_sdo_entry(int fd, uint16_t position, uint16_t sdo_position,
  *  same ioctl). -EINVAL if not in the dictionary. */
 int ecsdo_io_sdo_entry_by_index(int fd, uint16_t position, uint16_t index,
         uint8_t subindex, ecsdo_io_sdo_entry_t *out);
+
+/** Copy nwords SII words from offset out of the master's SII cache (no
+ *  bus access). words holds the raw EEPROM bytes (little-endian). */
+int ecsdo_io_sii_read(int fd, uint16_t position, uint16_t offset,
+        uint32_t nwords, uint16_t *words);
 
 /** Upload. -ENOBUFS means target_size was too small. On an SDO abort the
  *  return value is negative and *abort_code is non-zero. */

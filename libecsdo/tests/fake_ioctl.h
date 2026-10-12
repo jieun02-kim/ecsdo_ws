@@ -12,8 +12,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define FAKE_MAX_SLAVES 4
-#define FAKE_MAX_OBJECTS 16
+#define FAKE_MAX_SLAVES 8
+#define FAKE_MAX_OBJECTS 32
 #define FAKE_MAX_ENTRIES 8
 #define FAKE_MAX_UPLOADS 64
 
@@ -47,6 +47,10 @@ typedef struct {
     uint8_t enable_sdo_info;
     uint8_t al_state;
     const char *name;
+    const char *order;
+    const char *group;
+    const uint8_t *sii;       /* raw SII bytes (even length) */
+    size_t sii_size;
 
     size_t object_count;
     fake_object_t objects[FAKE_MAX_OBJECTS];

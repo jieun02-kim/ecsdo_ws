@@ -136,6 +136,42 @@ int ecsdo_read_dict(ecsdo_ctx_t *ctx, uint16_t position,
         ecsdo_slave_t **slave);
 void ecsdo_free_slave(ecsdo_slave_t *slave);
 
+/* ------------------------------------------------------------------------
+ * SII (slave EEPROM) as the master holds it. No bus access.
+ * ---------------------------------------------------------------------- */
+
+/* Mailbox protocol bits (ETG.1000.6), as in ecsdo_sii_info_t. */
+#define ECSDO_MBOX_AOE 0x01
+#define ECSDO_MBOX_EOE 0x02
+#define ECSDO_MBOX_COE 0x04
+#define ECSDO_MBOX_FOE 0x08
+#define ECSDO_MBOX_SOE 0x10
+#define ECSDO_MBOX_VOE 0x20
+
+/** What the master parsed from the SII beyond ecsdo_slave_t. */
+typedef struct {
+    uint16_t mailbox_protocols;      /**< ECSDO_MBOX_* (0 if the master
+                                          found the mailbox settings
+                                          invalid). */
+    uint8_t has_general_category;    /**< SII has a General category. */
+    uint8_t enable_sdo_info;         /**< General CoE details bit, as
+                                          stored (0 without General). */
+    char order[ECSDO_STRING_SIZE];   /**< Order number (General). */
+    char group[ECSDO_STRING_SIZE];   /**< Group (General). */
+    uint32_t sii_nwords;             /**< SII size held by the master. */
+} ecsdo_sii_info_t;
+
+/** Fill info for the slave at position. Returns ECSDO_OK,
+ *  ECSDO_ERR_NO_SLAVE or ECSDO_ERR_IOCTL. */
+int ecsdo_read_sii_info(ecsdo_ctx_t *ctx, uint16_t position,
+        ecsdo_sii_info_t *info);
+
+/** Copy of the whole SII as raw EEPROM bytes (words little-endian, like
+ *  `ethercat sii_read`). *data is malloc()ed, free() it; NULL with
+ *  *size 0 if the master holds no SII. Works on a read-only handle. */
+int ecsdo_read_sii(ecsdo_ctx_t *ctx, uint16_t position, uint8_t **data,
+        size_t *size);
+
 /** Upload one SDO entry into buf, like `ethercat upload` / libethercat's
  *  ecrt_master_sdo_upload(). The raw value (little-endian) is stored in
  *  buf, its length in *data_size.

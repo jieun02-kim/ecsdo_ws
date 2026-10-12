@@ -95,7 +95,23 @@ int ecsdo_io_slave(int fd, uint16_t position, ecsdo_io_slave_t *out)
     out->enable_sdo_info = s->enable_sdo_info;
     out->al_state = s->al_state;
     out->sdo_count = (uint16_t) s->visible_objects;
+    out->sii_nwords = (uint32_t) (s->sii_size / 2);
     copy_name(out->name, s->name);
+    copy_name(out->order, s->order);
+    copy_name(out->group, s->group);
+    return 0;
+}
+
+int ecsdo_io_sii_read(int fd, uint16_t position, uint16_t offset,
+        uint32_t nwords, uint16_t *words)
+{
+    fake_slave_t *s = slave_at(position);
+
+    (void) fd;
+    /* Same checks as the master. */
+    if (!s || !nwords || (size_t) offset + nwords > s->sii_size / 2)
+        return -EINVAL;
+    memcpy(words, s->sii + (size_t) offset * 2, (size_t) nwords * 2);
     return 0;
 }
 

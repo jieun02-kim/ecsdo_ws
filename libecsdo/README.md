@@ -1,11 +1,11 @@
 # libecsdo v2
 
-IgH EtherCAT Master에서 **SDO 목록(사전) 읽기**와 **SDO 값 하나 읽기(upload)** 만 하는 C 라이브러리.
+IgH EtherCAT Master에서 **SDO 목록(사전) 읽기**, **SDO 값 하나 읽기(upload)**, **SII 읽기**만 하는 C 라이브러리.
 
 - 읽기 전용. 장치에 쓰지 않고, 마스터를 예약하지 않는다 (제어 프로그램이 마스터를 잡고 있어도 동작).
 - `ethercat sdos`, `ethercat upload`와 같은 정보를 함수로 받는다.
 - 값은 `ethercat upload`처럼 타입을 확인하고 숫자/문자열로 해석해 준다.
-- 보조 모듈 `ecsdo_util`: SDO 목록 JSON 덤프, **이름으로 값 읽기**(제어 코드용 표). 핵심 라이브러리는 이 모듈 없이도 쓸 수 있다.
+- 보조 모듈 `ecsdo_util`: SDO 목록 JSON 덤프, **이름으로 값 읽기**(제어 코드용 표), SII 카테고리 파서. 핵심 라이브러리는 이 모듈 없이도 쓸 수 있다.
 
 > 처음이라면 IgH EtherCAT Master부터 설치한다: [`../IGH_SETUP.md`](../IGH_SETUP.md)
 
@@ -27,6 +27,8 @@ IgH EtherCAT Master에서 **SDO 목록(사전) 읽기**와 **SDO 값 하나 읽�
 `ecrt_master_get_pdo_entry()`, 마스터 예약·PDO 등록·OP. libecsdo는 libethercat에 없는
 **SDO 목록, 사전 준비 대기, 타입 해석 값 읽기, 이름으로 값 읽기**만 담당한다.
 | `ecsdo_strerror(code)`, `ecsdo_last_errno(ctx)` | 오류 설명 |
+| `ecsdo_read_sii_info(ctx, pos, &info)` | 마스터가 파싱한 SII 정보 중 `ecsdo_slave_t`에 없는 것: mailbox 비트, General 유무, SDO Info 비트, order, group |
+| `ecsdo_read_sii(ctx, pos, &data, &size)` | SII 원본 (`ethercat sii_read`, 마스터 캐시, 버스 통신 없음, 읽기 권한만 필요) |
 
 ## 예제
 
@@ -80,6 +82,8 @@ ecsdo_close(ctx);
 | `ecsdo_get_items(ctx, items, n)` | 이름(selector)으로 찾아서 upload + 타입 확인 + 해석 → `items[]`에 채움 |
 | `ecsdo_items_json(items, n, FILE*)` | 읽은 값 표를 JSON으로 (`ecsdo_cli get -j`) |
 | `ecsdo_util_strerror(code)` | 아래 추가 오류 포함 설명 |
+| `ecsdo_sii_parse(data, size, &sii)` / `ecsdo_sii_free(sii)` | SII 원본에서 SyncM, TxPDO/RxPDO(엔트리 이름, data_type 포함) 파싱 (`ecsdo_sii.h`, I/O 없음) |
+| `ecsdo_sii_has_process_data(sii)` | SII에 프로세스 데이터(PDO 엔트리 또는 PD SM)가 있는지 |
 
 **제어 코드에서 쓰는 법**
 
@@ -200,13 +204,15 @@ ecsdo_cli get "Device Type" "Vendor ID"   # 이름으로 실제 값 (모든 슬�
 include/ecsdo/ecsdo.h   공개 API
 src/ecsdo.c             구현 (열기, 대기, 사전 읽기, upload)
 src/ecsdo_types.c       CoE 타입 표 (CiA 301 / ETG.1000.6), 값 해석, abort 설명
-src/ecsdo_ioctl.[ch]    ioctl 6종 (MODULE, MASTER, SLAVE, SLAVE_SDO, SLAVE_SDO_ENTRY,
-                        SLAVE_SDO_UPLOAD). SDO_ENTRY는 목록 위치/index 두 방식으로 사용.
+src/ecsdo_ioctl.[ch]    ioctl 7종 (MODULE, MASTER, SLAVE, SLAVE_SDO, SLAVE_SDO_ENTRY,
+                        SLAVE_SDO_UPLOAD, SLAVE_SII_READ). SDO_ENTRY는 목록 위치/index 두 방식으로 사용.
                         IgH 헤더는 여기서만 사용
 include/ecsdo/ecsdo_util.h  보조 모듈 API
 util/ecsdo_util.c       보조 모듈: JSON 덤프, selector, 이름으로 값 읽기
+include/ecsdo/ecsdo_sii.h, util/ecsdo_sii.c  보조 모듈: SII 카테고리 파서
 examples/ecsdo_cli.c    확인용 CLI (sdos, upload, scan, get)
 examples/startup_check.c 제어 코드 시작 시 사용 예
 examples/op_test/       libecsdo + libethercat으로 OP까지 (libethercat 있을 때만 빌드)
+examples/device_probe/  장치 판별 진입 흐름 + LLM 입력용 JSON 덤프 (README.md 참고)
 tests/                  가짜 ioctl 계층으로 하는 단위 테스트
 ```

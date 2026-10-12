@@ -45,7 +45,7 @@ set_target_properties(ecsdo PROPERTIES
     POSITION_INDEPENDENT_CODE ON)
 
 # Optional helpers (JSON dump, values by name), only public API inside.
-add_library(ecsdo_util util/ecsdo_util.c)
+add_library(ecsdo_util util/ecsdo_util.c util/ecsdo_sii.c)
 target_link_libraries(ecsdo_util PUBLIC ecsdo)
 target_compile_options(ecsdo_util PRIVATE -Wall -Wextra)
 set_target_properties(ecsdo_util PROPERTIES POSITION_INDEPENDENT_CODE ON)
@@ -57,6 +57,11 @@ if(ECSDO_BUILD_EXAMPLES)
     add_executable(startup_check examples/startup_check.c)
     target_link_libraries(startup_check PRIVATE ecsdo_util ecsdo)
     target_compile_options(startup_check PRIVATE -Wall -Wextra)
+    add_executable(device_probe examples/device_probe/device_probe.c)
+    target_link_libraries(device_probe PRIVATE ecsdo_util ecsdo)
+    target_compile_options(device_probe PRIVATE -Wall -Wextra)
+    target_compile_definitions(device_probe PRIVATE
+        DEVICE_PROBE_VENDOR_IDS="${CMAKE_CURRENT_SOURCE_DIR}/examples/device_probe/vendor_ids.json")
 endif()
 
 if(ECSDO_BUILD_OP_TEST)
@@ -89,6 +94,25 @@ if(ECSDO_BUILD_TESTS)
         ${CMAKE_CURRENT_SOURCE_DIR}/tests)
     target_compile_options(test_items PRIVATE -Wall -Wextra)
     add_test(NAME items COMMAND test_items)
+
+    add_executable(test_sii tests/test_sii.c util/ecsdo_sii.c
+        tests/fake_ioctl.c $<TARGET_OBJECTS:ecsdo_core>)
+    target_include_directories(test_sii PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/src
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+    target_compile_options(test_sii PRIVATE -Wall -Wextra)
+    add_test(NAME sii COMMAND test_sii)
+
+    # device_probe on a simulated bus; JSON kept in build/probe_sim_dump.
+    add_executable(probe_sim tests/probe_sim.c tests/probe_main.c
+        util/ecsdo_sii.c tests/fake_ioctl.c $<TARGET_OBJECTS:ecsdo_core>)
+    target_include_directories(probe_sim PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/src
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+    target_compile_options(probe_sim PRIVATE -Wall -Wextra)
+    add_test(NAME probe_sim COMMAND probe_sim
+        ${CMAKE_CURRENT_BINARY_DIR}/probe_sim_dump
+        ${CMAKE_CURRENT_SOURCE_DIR}/examples/device_probe/vendor_ids.json)
 endif()
 
 include(GNUInstallDirs)
@@ -103,7 +127,7 @@ install(TARGETS ecsdo ecsdo_util EXPORT ecsdoTargets
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(FILES include/ecsdo/ecsdo.h include/ecsdo/ecsdo_util.h
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/ecsdo)
+    include/ecsdo/ecsdo_sii.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/ecsdo)
 if(ECSDO_BUILD_EXAMPLES)
     install(TARGETS ecsdo_cli RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()

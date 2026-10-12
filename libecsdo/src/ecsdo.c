@@ -469,6 +469,78 @@ done:
 }
 
 /* ------------------------------------------------------------------------
+ * SII
+ * ---------------------------------------------------------------------- */
+
+static int read_io_slave(ecsdo_ctx_t *ctx, uint16_t position,
+        ecsdo_io_slave_t *s)
+{
+    int ret = ecsdo_io_slave(ctx->fd, position, s);
+
+    if (ret == -EINVAL)
+        return ECSDO_ERR_NO_SLAVE;
+    if (ret)
+        return io_fail(ctx, ret);
+    return ECSDO_OK;
+}
+
+int ecsdo_read_sii_info(ecsdo_ctx_t *ctx, uint16_t position,
+        ecsdo_sii_info_t *info)
+{
+    ecsdo_io_slave_t s;
+    int ret;
+
+    if (!ctx || !info)
+        return ECSDO_ERR_INVALID_ARG;
+    memset(info, 0, sizeof(*info));
+    ret = read_io_slave(ctx, position, &s);
+    if (ret)
+        return ret;
+
+    info->mailbox_protocols = s.mailbox_protocols;
+    info->has_general_category = s.has_general_category;
+    info->enable_sdo_info = s.enable_sdo_info;
+    memcpy(info->order, s.order, sizeof(info->order));
+    memcpy(info->group, s.group, sizeof(info->group));
+    info->sii_nwords = s.sii_nwords;
+    return ECSDO_OK;
+}
+
+int ecsdo_read_sii(ecsdo_ctx_t *ctx, uint16_t position, uint8_t **data,
+        size_t *size)
+{
+    ecsdo_io_slave_t s;
+    uint16_t *words;
+    int ret;
+
+    if (data)
+        *data = NULL;
+    if (size)
+        *size = 0;
+    if (!ctx || !data || !size)
+        return ECSDO_ERR_INVALID_ARG;
+    ret = read_io_slave(ctx, position, &s);
+    if (ret)
+        return ret;
+    if (!s.sii_nwords)
+        return ECSDO_OK;
+    if (s.sii_nwords > 0x10000u) /* offset is 16 bit */
+        return io_fail(ctx, -EINVAL);
+
+    words = calloc(s.sii_nwords, sizeof(*words));
+    if (!words)
+        return ECSDO_ERR_NO_MEMORY;
+    ret = ecsdo_io_sii_read(ctx->fd, position, 0, s.sii_nwords, words);
+    if (ret) {
+        free(words);
+        return io_fail(ctx, ret); /* -EINVAL: rescanned meanwhile */
+    }
+    *data = (uint8_t *) words;
+    *size = (size_t) s.sii_nwords * 2u;
+    return ECSDO_OK;
+}
+
+/* ------------------------------------------------------------------------
  * Upload
  * ---------------------------------------------------------------------- */
 

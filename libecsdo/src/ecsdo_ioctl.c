@@ -3,7 +3,7 @@
  * (master/ioctl.h and master/globals.h, LGPL 2.1).
  *
  * Only read-only ioctls are used: MODULE, MASTER, SLAVE, SLAVE_SDO,
- * SLAVE_SDO_ENTRY and SLAVE_SDO_UPLOAD. Nothing here changes slave state
+ * SLAVE_SDO_ENTRY, SLAVE_SDO_UPLOAD and SLAVE_SII_READ. Nothing here changes slave state
  * or reserves the master.
  */
 
@@ -35,7 +35,10 @@ _Static_assert(EC_SLAVE_STATE_INIT == ECSDO_AL_INIT
         && EC_SLAVE_STATE_ACK_ERR == ECSDO_AL_ERROR
         && EC_SLAVE_STATE_MASK == ECSDO_AL_STATE_MASK,
         "AL state values mismatch");
-_Static_assert(EC_MBOX_COE == ECSDO_MBOX_COE, "CoE mailbox bit mismatch");
+_Static_assert(EC_MBOX_AOE == ECSDO_MBOX_AOE && EC_MBOX_EOE == ECSDO_MBOX_EOE
+        && EC_MBOX_COE == ECSDO_MBOX_COE && EC_MBOX_FOE == ECSDO_MBOX_FOE
+        && EC_MBOX_SOE == ECSDO_MBOX_SOE && EC_MBOX_VOE == ECSDO_MBOX_VOE,
+        "mailbox protocol bits mismatch");
 
 /** ioctl() that retries when interrupted; returns 0 or -errno. */
 static int do_ioctl(int fd, unsigned long cmd, void *arg)
@@ -139,6 +142,7 @@ int ecsdo_io_slave(int fd, uint16_t position, ecsdo_io_slave_t *out)
     out->al_state = data.al_state;
     out->error_flag = data.error_flag;
     out->sdo_count = data.sdo_count;
+    out->sii_nwords = data.sii_nwords;
     copy_str(out->name, data.name, sizeof(out->name));
     copy_str(out->order, data.order, sizeof(out->order));
     copy_str(out->group, data.group, sizeof(out->group));
@@ -202,6 +206,19 @@ int ecsdo_io_sdo_entry_by_index(int fd, uint16_t position, uint16_t index,
     if (!index) /* 0 would mean list position 0 */
         return -EINVAL;
     return sdo_entry(fd, position, (int) index, subindex, out);
+}
+
+int ecsdo_io_sii_read(int fd, uint16_t position, uint16_t offset,
+        uint32_t nwords, uint16_t *words)
+{
+    ec_ioctl_slave_sii_t data;
+
+    memset(&data, 0, sizeof(data));
+    data.slave_position = position;
+    data.offset = offset;
+    data.nwords = nwords;
+    data.words = words;
+    return do_ioctl(fd, EC_IOCTL_SLAVE_SII_READ, &data);
 }
 
 int ecsdo_io_sdo_upload(int fd, uint16_t position, uint16_t index,

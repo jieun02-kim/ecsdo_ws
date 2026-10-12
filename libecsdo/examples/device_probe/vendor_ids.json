@@ -1,0 +1,4 @@
+{
+  "_comment": "vendor_id (hex) -> name, for device_probe. Only confirmed values; keys starting with _ are ignored.",
+  "0x00000002": "Beckhoff Automation GmbH & Co. KG"
+}
