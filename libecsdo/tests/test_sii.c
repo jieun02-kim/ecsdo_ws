@@ -195,6 +195,7 @@ static void test_read_sii(void)
     fake.slaves[0].mailbox_protocols = ECSDO_MBOX_COE | ECSDO_MBOX_FOE;
     fake.slaves[0].has_general_category = 1;
     fake.slaves[0].enable_sdo_info = 1;
+    fake.slaves[0].enable_pdo_configuration = 1;     /* assign stays 0 */
     fake.slaves[0].order = "L7NHA004U";
     fake.slaves[0].group = "Servo Drive";
     fake.slaves[0].sii = img.b;
@@ -206,6 +207,8 @@ static void test_read_sii(void)
     CHECK_EQ(info.mailbox_protocols, ECSDO_MBOX_COE | ECSDO_MBOX_FOE);
     CHECK_EQ(info.has_general_category, 1);
     CHECK_EQ(info.enable_sdo_info, 1);
+    CHECK_EQ(info.enable_pdo_assign, 0);
+    CHECK_EQ(info.enable_pdo_configuration, 1);
     CHECK_STR(info.order, "L7NHA004U");
     CHECK_STR(info.group, "Servo Drive");
     CHECK_EQ(info.sii_nwords, img.n / 2);

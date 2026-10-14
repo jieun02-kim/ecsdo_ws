@@ -1,0 +1,104 @@
+# CiA402 드라이브 rule
+# 구성: default(의도 입력이 없을 때) / modes(운전 모드별 필수 항목) / extras(요청 시 추가 항목)
+# - 항목 순서 = 매핑 순서이자 우선순위
+# - cyclic: PDO에 넣는 객체, on_event: 필요할 때 SDO로 읽는 객체
+# - 다축 장치: 축 k의 index = 기본 index + k * axis_offset
+id: cia402
+profile: 402
+description: CiA402 드라이브 (서보, 스테퍼, 다축 드라이브)
+axis_offset: 0x800
+
+# 의도 입력이 없을 때 = 기본 모드의 필수 항목만 (최소 요건 매핑)
+default:
+  mode: cst          # RAON-RT 기본 운전 모드
+  extras: []
+
+# 운전 모드 설정: 0x6060을 PDO에 넣지 않으면 초기화 때 SDO로 한 번 쓴다
+init_sdo:
+  - {index: 0x6060, sub: 0, value: mode_value, note: 운전 모드 설정}
+
+# ---------------------------------------------------------------- 필수 항목
+modes:
+  cst:
+    mode_value: 10
+    drive_mode_bit: CST          # 0x6502에서 확인하는 비트 이름
+    rx:
+      - {role: control_word,    index: 0x6040, sub: 0, bits: 16, type: UINT16}
+      - {role: target_torque,   index: 0x6071, sub: 0, bits: 16, type: INT16}
+    tx:
+      - {role: status_word,     index: 0x6041, sub: 0, bits: 16, type: UINT16}
+      - {role: actual_torque,   index: 0x6077, sub: 0, bits: 16, type: INT16}
+      # 아래 두 개는 CiA402 최소 요건이 아니라 RAON-RT 토크 제어 피드백 기준 (확인 필요)
+      - {role: actual_position, index: 0x6064, sub: 0, bits: 32, type: INT32}
+      - {role: actual_velocity, index: 0x606C, sub: 0, bits: 32, type: INT32}
+
+  csp:
+    mode_value: 8
+    drive_mode_bit: CSP
+    rx:
+      - {role: control_word,    index: 0x6040, sub: 0, bits: 16, type: UINT16}
+      - {role: target_position, index: 0x607A, sub: 0, bits: 32, type: INT32}
+    tx:
+      - {role: status_word,     index: 0x6041, sub: 0, bits: 16, type: UINT16}
+      - {role: actual_position, index: 0x6064, sub: 0, bits: 32, type: INT32}
+
+  csv:
+    mode_value: 9
+    drive_mode_bit: CSV
+    rx:
+      - {role: control_word,    index: 0x6040, sub: 0, bits: 16, type: UINT16}
+      - {role: target_velocity, index: 0x60FF, sub: 0, bits: 32, type: INT32}
+    tx:
+      - {role: status_word,     index: 0x6041, sub: 0, bits: 16, type: UINT16}
+      - {role: actual_velocity, index: 0x606C, sub: 0, bits: 32, type: INT32}
+
+# ---------------------------------------------------------------- 추가 항목
+# 요청한 묶음만 들어간다. 장치에 없는 객체는 빼고 보고한다.
+extras:
+  mode_switch:
+    description: 운전 중 모드 전환 (PDO로 모드 지령·확인)
+    rx: [{role: mode_of_operation, index: 0x6060, sub: 0, bits: 8, type: INT8}]
+    tx: [{role: mode_display,      index: 0x6061, sub: 0, bits: 8, type: INT8}]
+
+  state_monitor:
+    description: 위치·속도·토크 상태 관찰
+    tx:
+      - {role: actual_position, index: 0x6064, sub: 0, bits: 32, type: INT32}
+      - {role: actual_velocity, index: 0x606C, sub: 0, bits: 32, type: INT32}
+      - {role: actual_torque,   index: 0x6077, sub: 0, bits: 16, type: INT16}
+
+  current_monitor:
+    description: 전류 관찰
+    tx: [{role: actual_current, index: 0x6078, sub: 0, bits: 16, type: INT16}]
+
+  error_detect:
+    description: 에러 실시간 감지와 기록 (감지는 PDO, 상세 기록은 발생 시 SDO)
+    tx: [{role: error_code, index: 0x603F, sub: 0, bits: 16, type: UINT16}]
+    on_event:
+      - {role: error_register, index: 0x1001, sub: 0, bits: 8, type: UINT8}
+      # 벤더 알람 코드는 모델 rule(models/)에서 추가
+
+  following_error:
+    description: 추종 오차 관찰 (CSP에서 주로 사용)
+    tx: [{role: following_error, index: 0x60F4, sub: 0, bits: 32, type: INT32}]
+
+  feedforward:
+    description: 속도·토크 피드포워드 지령
+    rx:
+      - {role: velocity_offset, index: 0x60B1, sub: 0, bits: 32, type: INT32}
+      - {role: torque_offset,   index: 0x60B2, sub: 0, bits: 16, type: INT16}
+
+  digital_inputs:
+    description: 드라이브 디지털 입력 (리밋, 원점 센서 등)
+    tx: [{role: digital_inputs, index: 0x60FD, sub: 0, bits: 32, type: UINT32}]
+
+  digital_outputs:
+    description: 드라이브 디지털 출력 (브레이크 등)
+    rx: [{role: digital_outputs, index: 0x60FE, sub: 1, bits: 32, type: UINT32}]
+
+  touch_probe:
+    description: 터치 프로브 (위치 래치)
+    rx: [{role: touch_probe_function, index: 0x60B8, sub: 0, bits: 16, type: UINT16}]
+    tx:
+      - {role: touch_probe_status,   index: 0x60B9, sub: 0, bits: 16, type: UINT16}
+      - {role: touch_probe_pos1_pos, index: 0x60BA, sub: 0, bits: 32, type: INT32}

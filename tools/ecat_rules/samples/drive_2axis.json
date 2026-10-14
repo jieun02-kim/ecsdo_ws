@@ -1,0 +1,217 @@
+{
+  "_note": "형식 확인용 가상 데이터. 실제 덤프와 값이 다를 수 있음",
+  "position": 3,
+  "branch": "cia402",
+  "sii.identity": {
+    "vendor_id": "0x00007595",
+    "product_code": "0x00000000",
+    "revision": "0x00000001"
+  },
+  "sii.vendor_name": null,
+  "sii.strings": {
+    "order": null,
+    "group": null
+  },
+  "sii.mailbox": [
+    "CoE",
+    "FoE"
+  ],
+  "sii.sdo_info": true,
+  "od.device_type": {
+    "raw": "0x00020192",
+    "profile": 402,
+    "type": "servo"
+  },
+  "od.identity_match": true,
+  "od.name_ver": {
+    "device_name": "L7NH"
+  },
+  "od.drive_modes": {
+    "raw": "0x000003A5",
+    "modes": [
+      "CSP",
+      "CSV",
+      "CST",
+      "PP",
+      "PV",
+      "HM"
+    ]
+  },
+  "od.rxpdo": {
+    "basis": "assigned",
+    "pdos": [
+      {
+        "index": "0x1600",
+        "entries": [
+          {
+            "index": "0x6040",
+            "subindex": 0,
+            "bit_len": 16,
+            "name": "Controlword"
+          },
+          {
+            "index": "0x607a",
+            "subindex": 0,
+            "bit_len": 32,
+            "name": "Target position"
+          },
+          {
+            "index": "0x6060",
+            "subindex": 0,
+            "bit_len": 8,
+            "name": "Modes of operation"
+          }
+        ]
+      }
+    ]
+  },
+  "od.txpdo": {
+    "basis": "assigned",
+    "pdos": [
+      {
+        "index": "0x1A00",
+        "entries": [
+          {
+            "index": "0x6041",
+            "subindex": 0,
+            "bit_len": 16,
+            "name": "Statusword"
+          },
+          {
+            "index": "0x6064",
+            "subindex": 0,
+            "bit_len": 32,
+            "name": "Position actual value"
+          },
+          {
+            "index": "0x606c",
+            "subindex": 0,
+            "bit_len": 32,
+            "name": "Velocity actual value"
+          },
+          {
+            "index": "0x6061",
+            "subindex": 0,
+            "bit_len": 8,
+            "name": "Modes of operation display"
+          },
+          {
+            "index": "0x603f",
+            "subindex": 0,
+            "bit_len": 16,
+            "name": "Error code"
+          }
+        ]
+      }
+    ]
+  },
+  "od.profile_axis0": [
+    {
+      "index": "0x603f",
+      "name": "Error code",
+      "data_type": "UINT16",
+      "access": "ro"
+    },
+    {
+      "index": "0x6040",
+      "name": "Controlword",
+      "data_type": "UINT16",
+      "access": "rw"
+    },
+    {
+      "index": "0x6041",
+      "name": "Statusword",
+      "data_type": "UINT16",
+      "access": "ro"
+    },
+    {
+      "index": "0x6060",
+      "name": "Modes of operation",
+      "data_type": "INT8",
+      "access": "rw"
+    },
+    {
+      "index": "0x6061",
+      "name": "Modes of operation display",
+      "data_type": "INT8",
+      "access": "ro"
+    },
+    {
+      "index": "0x6064",
+      "name": "Position actual value",
+      "data_type": "INT32",
+      "access": "ro"
+    },
+    {
+      "index": "0x606c",
+      "name": "Velocity actual value",
+      "data_type": "INT32",
+      "access": "ro"
+    },
+    {
+      "index": "0x6071",
+      "name": "Target torque",
+      "data_type": "INT16",
+      "access": "rw"
+    },
+    {
+      "index": "0x6077",
+      "name": "Torque actual value",
+      "data_type": "INT16",
+      "access": "ro"
+    },
+    {
+      "index": "0x607a",
+      "name": "Target position",
+      "data_type": "INT32",
+      "access": "rw"
+    },
+    {
+      "index": "0x60b1",
+      "name": "Velocity offset",
+      "data_type": "INT32",
+      "access": "rw"
+    },
+    {
+      "index": "0x60b2",
+      "name": "Torque offset",
+      "data_type": "INT16",
+      "access": "rw"
+    },
+    {
+      "index": "0x60f4",
+      "name": "Following error actual value",
+      "data_type": "INT32",
+      "access": "ro"
+    },
+    {
+      "index": "0x60ff",
+      "name": "Target velocity",
+      "data_type": "INT32",
+      "access": "rw"
+    },
+    {
+      "index": "0x6502",
+      "name": "Supported drive modes",
+      "data_type": "UINT32",
+      "access": "ro"
+    }
+  ],
+  "od.profile_axes_extra": [
+    {
+      "axis": 1,
+      "range": "0x6800-0x6FFF",
+      "objects": 15
+    }
+  ],
+  "od.vendor": {
+    "objects": [
+      {
+        "index": "0x2000",
+        "name": "Motor ID"
+      }
+    ],
+    "truncated": false
+  },
+  "errors": []
+}

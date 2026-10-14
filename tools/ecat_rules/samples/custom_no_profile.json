@@ -1,0 +1,69 @@
+{
+  "_note": "형식 확인용 가상 데이터. 실제 덤프와 값이 다를 수 있음",
+  "position": 8,
+  "branch": "other_profile",
+  "sii.identity": {
+    "vendor_id": "0x00001234",
+    "product_code": "0x00000010",
+    "revision": "0x00000001"
+  },
+  "sii.vendor_name": null,
+  "sii.strings": {
+    "name": "Custom Sensor",
+    "order": null,
+    "group": null
+  },
+  "sii.mailbox": [
+    "CoE"
+  ],
+  "sii.sdo_info": true,
+  "od.device_type": {
+    "raw": "0x00000000",
+    "profile": 0
+  },
+  "od.rxpdo": {
+    "basis": "assigned",
+    "pdos": [
+      {
+        "index": "0x1600",
+        "entries": [
+          {
+            "index": "0x2100",
+            "subindex": 1,
+            "bit_len": 16,
+            "name": "Command"
+          }
+        ]
+      }
+    ]
+  },
+  "od.txpdo": {
+    "basis": "assigned",
+    "pdos": [
+      {
+        "index": "0x1A00",
+        "entries": [
+          {
+            "index": "0x2000",
+            "subindex": 1,
+            "bit_len": 32,
+            "name": "Force X"
+          },
+          {
+            "index": "0x2000",
+            "subindex": 2,
+            "bit_len": 32,
+            "name": "Force Y"
+          },
+          {
+            "index": "0x2000",
+            "subindex": 3,
+            "bit_len": 32,
+            "name": "Force Z"
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

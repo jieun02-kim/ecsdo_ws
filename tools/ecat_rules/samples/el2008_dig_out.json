@@ -1,0 +1,128 @@
+{
+  "_note": "형식 확인용 가상 데이터. 실제 덤프와 값이 다를 수 있음",
+  "position": 5,
+  "branch": "non_coe",
+  "sii.identity": {
+    "vendor_id": "0x00000002",
+    "product_code": "0x07D83052",
+    "revision": "0x00000001"
+  },
+  "sii.vendor_name": null,
+  "sii.strings": {
+    "name": "EL2008 8Ch. Dig. Output 24V, 0.5A",
+    "order": "EL2008",
+    "group": "DigOut"
+  },
+  "sii.mailbox": [],
+  "sii.sdo_info": null,
+  "sii.pdo": {
+    "rxpdo": [
+      {
+        "index": "0x1600",
+        "entries": [
+          {
+            "index": "0x7000",
+            "subindex": 1,
+            "bit_len": 1,
+            "name": "Output",
+            "data_type": "BOOL"
+          }
+        ],
+        "sm": 2
+      },
+      {
+        "index": "0x1601",
+        "entries": [
+          {
+            "index": "0x7010",
+            "subindex": 1,
+            "bit_len": 1,
+            "name": "Output",
+            "data_type": "BOOL"
+          }
+        ],
+        "sm": 2
+      },
+      {
+        "index": "0x1602",
+        "entries": [
+          {
+            "index": "0x7020",
+            "subindex": 1,
+            "bit_len": 1,
+            "name": "Output",
+            "data_type": "BOOL"
+          }
+        ],
+        "sm": 2
+      },
+      {
+        "index": "0x1603",
+        "entries": [
+          {
+            "index": "0x7030",
+            "subindex": 1,
+            "bit_len": 1,
+            "name": "Output",
+            "data_type": "BOOL"
+          }
+        ],
+        "sm": 2
+      },
+      {
+        "index": "0x1604",
+        "entries": [
+          {
+            "index": "0x7040",
+            "subindex": 1,
+            "bit_len": 1,
+            "name": "Output",
+            "data_type": "BOOL"
+          }
+        ],
+        "sm": 2
+      },
+      {
+        "index": "0x1605",
+        "entries": [
+          {
+            "index": "0x7050",
+            "subindex": 1,
+            "bit_len": 1,
+            "name": "Output",
+            "data_type": "BOOL"
+          }
+        ],
+        "sm": 2
+      },
+      {
+        "index": "0x1606",
+        "entries": [
+          {
+            "index": "0x7060",
+            "subindex": 1,
+            "bit_len": 1,
+            "name": "Output",
+            "data_type": "BOOL"
+          }
+        ],
+        "sm": 2
+      },
+      {
+        "index": "0x1607",
+        "entries": [
+          {
+            "index": "0x7070",
+            "subindex": 1,
+            "bit_len": 1,
+            "name": "Output",
+            "data_type": "BOOL"
+          }
+        ],
+        "sm": 2
+      }
+    ],
+    "txpdo": []
+  },
+  "errors": []
+}

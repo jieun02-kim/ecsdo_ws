@@ -29,6 +29,8 @@ typedef struct {
     uint16_t mailbox_protocols;
     uint8_t has_general_category;
     uint8_t enable_sdo_info;
+    uint8_t enable_pdo_assign;
+    uint8_t enable_pdo_configuration;
     uint8_t al_state;
     uint8_t error_flag;
     uint16_t sdo_count;

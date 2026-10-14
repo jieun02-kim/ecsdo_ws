@@ -139,6 +139,9 @@ int ecsdo_io_slave(int fd, uint16_t position, ecsdo_io_slave_t *out)
     out->mailbox_protocols = data.mailbox_protocols;
     out->has_general_category = data.has_general_category;
     out->enable_sdo_info = data.coe_details.enable_sdo_info;
+    out->enable_pdo_assign = data.coe_details.enable_pdo_assign;
+    out->enable_pdo_configuration =
+        data.coe_details.enable_pdo_configuration;
     out->al_state = data.al_state;
     out->error_flag = data.error_flag;
     out->sdo_count = data.sdo_count;

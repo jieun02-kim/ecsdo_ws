@@ -156,6 +156,10 @@ typedef struct {
     uint8_t has_general_category;    /**< SII has a General category. */
     uint8_t enable_sdo_info;         /**< General CoE details bit, as
                                           stored (0 without General). */
+    uint8_t enable_pdo_assign;       /**< General CoE details bit 2: PDO
+                                          assignment (0x1C1x) writable. */
+    uint8_t enable_pdo_configuration; /**< General CoE details bit 3: PDO
+                                          mapping (0x16xx/0x1Axx) writable. */
     char order[ECSDO_STRING_SIZE];   /**< Order number (General). */
     char group[ECSDO_STRING_SIZE];   /**< Group (General). */
     uint32_t sii_nwords;             /**< SII size held by the master. */

@@ -500,6 +500,8 @@ int ecsdo_read_sii_info(ecsdo_ctx_t *ctx, uint16_t position,
     info->mailbox_protocols = s.mailbox_protocols;
     info->has_general_category = s.has_general_category;
     info->enable_sdo_info = s.enable_sdo_info;
+    info->enable_pdo_assign = s.enable_pdo_assign;
+    info->enable_pdo_configuration = s.enable_pdo_configuration;
     memcpy(info->order, s.order, sizeof(info->order));
     memcpy(info->group, s.group, sizeof(info->group));
     info->sii_nwords = s.sii_nwords;

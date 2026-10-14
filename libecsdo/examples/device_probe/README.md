@@ -30,7 +30,7 @@ SDO upload에는 `/dev/EtherCAT<n>` 쓰기 권한이 필요하다. 권한이 없
 SII와 사전 읽기는 읽기 권한만 있어도 된다.
 
 장치 없이 확인하려면 `ctest -R probe_sim`을 실행한다. 가짜 ioctl로 만든 버스(서보, I/O 터미널, 커플러,
-MDP 장치, SDO Info 없는 서보)에 대해 실행되고, 결과는 `build/probe_sim_dump/`에 남는다.
+MDP 장치, SDO Info 없는 서보, 프로파일 없는 힘/토크 센서)에 대해 실행되고, 결과는 `build/probe_sim_dump/`에 남는다.
 
 ## 분기 로직
 
@@ -44,8 +44,8 @@ MDP 장치, SDO Info 없는 서보)에 대해 실행되고, 결과는 `build/pro
 3. SDO Info                     기록만 한다 (General 카테고리가 없으면 unknown)
 4. 0x1000 upload                SDO Info 지원 여부와 관계없이 읽는다
      하위 16비트 402 ────────▶ cia402           (1–14, 필요하면 sii.pdo)
-     5001 ───────────────────▶ mdp              (1–6)
-     그 외, 또는 못 읽음 ───▶ other_profile    (1–6)
+     5001 ───────────────────▶ mdp              (1–6, 10, 11 + sii.pdo)
+     그 외, 또는 못 읽음 ───▶ other_profile    (1–8, 10, 11, 15 + sii.pdo)
 ```
 
 로그 예 (시뮬레이션):
@@ -71,9 +71,10 @@ OD에서 읽지 못한 항목은 키를 생략하고, 이유는 `errors`에 남�
 |---|---|---|---|
 | 1 | `sii.identity` | `EC_IOCTL_SLAVE` (마스터가 파싱한 SII 0x0008–0x000D) | `{vendor_id, product_code, revision}` hex 문자열. serial 제외 |
 | 2 | `sii.vendor_name` | `vendor_ids.json` | 문자열 또는 null |
-| 3 | `sii.strings` | `EC_IOCTL_SLAVE` (General → Strings) | `{name, order, group}`, 빈 값은 null. cia402에서 0x1008을 읽었으면 `name`은 뺀다 |
+| 3 | `sii.strings` | `EC_IOCTL_SLAVE` (General → Strings) | `{name, order, group}`, 빈 값은 null. cia402, other_profile에서 0x1008을 읽었으면 `name`은 뺀다 |
 | 4 | `sii.mailbox` | `EC_IOCTL_SLAVE` (SII 0x001C) | `["CoE", "FoE", ...]` |
 | 5 | `sii.sdo_info` | General CoE Details | true / false / null (General 없음) |
+| 5′ | `sii.coe_details` | General CoE Details bit 2, 3 (`ec_ioctl_slave_t.coe_details`) | `{pdo_assign, pdo_config}` bool, null (General 없음). `pdo_assign`: 0x1C12/0x1C13 변경 가능, `pdo_config`: 0x16xx/0x1Axx 매핑 변경 가능 |
 | 6 | `od.device_type` | 0x1000 | `{raw, profile, type_code, type}`. `type`은 402일 때만 해석: frequency_converter / servo_drive / stepper_motor / multiple_axes. 그 외 프로파일은 `additional_info`(상위 16비트) |
 | 7 | `od.identity_match` | 0x1018:01–04 | true / false / null (1–3번을 못 읽음) |
 | 7′ | `od.identity_mismatch` | | 불일치할 때만: 다른 필드의 OD 값과 `serial_differs` |
@@ -84,7 +85,13 @@ OD에서 읽지 못한 항목은 키를 생략하고, 이유는 `errors`에 남�
 | 12 | `od.profile_axis0` | 사전 0x6000–0x67FF | `[{index, name, data_type, access}]` |
 | 13 | `od.profile_axes_extra` | 사전 0x6800–0x9FFF | `[{axis, range, objects}]`, 객체가 있는 축만. 없으면 `[]` |
 | 14 | `od.vendor` | 사전 0x2000–0x5FFF | `{objects: [{index, name}], total, truncated}`, 최대 150개 |
-| – | `sii.pdo` | SII 원본의 TxPDO/RxPDO 카테고리 | non_coe: 항상. cia402: 10, 11번 중 못 읽은 방향만 |
+| 15 | `od.objects` | 사전 0x2000–0x9FFF | other_profile만. `{objects: [{index, name, data_type, access}], total, truncated}`, 최대 300개. 12번과 같은 메타데이터 |
+| – | `sii.pdo` | SII 원본의 TxPDO/RxPDO 카테고리 | non_coe, mdp, other_profile: 항상 (두 방향). cia402: 10, 11번 중 못 읽은 방향, 또는 PDO 할당만 변경 가능한 장치(`pdo_assign` true, `pdo_config` false)면 두 방향 |
+
+분기별로 나오는 키: infrastructure, non_coe는 1–5′(non_coe는 `sii.pdo` 추가),
+other_profile은 1–8, 10, 11, 15, `sii.pdo`, mdp는 1–6과 10, 11, `sii.pdo`, cia402는 1–14.
+
+other_profile은 따를 프로파일이 없어서, 역할을 정할 근거가 PDO와 사전의 이름뿐이다. 그래서 그 둘을 모두 덤프한다.
 
 **세부 규칙**
 
@@ -92,17 +99,19 @@ OD에서 읽지 못한 항목은 키를 생략하고, 이유는 `errors`에 남�
   - 매핑 값은 32비트로, `index << 16 | subindex << 8 | bit_len`이다.
   - `name`과 `data_type`은 사전에서 대조한다. 레코드의 엔트리면 `entry_name`도 붙인다.
   - 사전에 없으면(SDO Info 없음) SII PDO의 같은 엔트리에서 가져오고 `"source": "sii"`를 붙인다.
+  - mdp 장치에서는 `name`이 객체 이름(예: "AI Standard Ch.1"), `entry_name`이 엔트리 이름(예: "Underrange")이다.
   - gap(index 0)은 `{index: "0x0000", subindex, bit_len, gap: true}`로 나온다.
   - `basis: "assigned"`는 SII 기본값이 아니라 **현재 할당된 값**이라는 뜻이다.
 - **`sii.pdo`**: `{rxpdo: [...], txpdo: [...]}`.
   - PDO마다 `{index, name, sm, entries: [{index, subindex, bit_len, data_type, name}]}` 형태다.
-  - SII에서 SM이 할당된 PDO만 넣는다. SM 값이 0xFF인 PDO는 기본으로 할당되지 않은 것이라 뺀다.
+  - SII의 PDO를 모두 넣는다. SM 값이 0xFF인 PDO(기본으로 할당되지 않은 것)는 `"sm": null`로 표시한다.
+    현재 매핑을 볼 때는 `sm`이 null이 아닌 것만 보고, 고정 PDO 세트를 고를 때는 전부를 후보로 본다.
   - PDO 이름(예: "Channel 1")은 넣는다. 디지털 I/O처럼 엔트리 이름이 모두 "Input"인 장치에서 채널을 구분할 수 있는 유일한 정보이기 때문이다.
 - **객체 메타데이터** (12번):
   - subindex가 0 하나뿐인 객체는 그 값의 `data_type`과 `access`를 쓴다.
   - subindex가 여러 개인 객체는 `"data_type": "RECORD"`, `entries`(sub 1 이상의 개수), `sub1_type`, sub1의 `access`를 쓴다. 마스터가 VAR/ARRAY/RECORD 구분을 넘겨주지 않아서, ARRAY도 RECORD로 표시된다.
 - **`access`**: `ro` / `rw` / `wo` / `none` 중 하나다. PREOP, SAFEOP, OP 상태마다 권한이 다르면 `ethercat sdos`처럼 `rwr-r-` 형식으로 쓴다.
-- **12–14번을 쓸 수 없을 때**: `{"unavailable": 이유}`로 나온다. 이유는 `no_sdo_info`, `dict_not_ready`(대기 시간 초과), `dict_error` 중 하나다.
+- **12–15번을 쓸 수 없을 때**: `{"unavailable": 이유}`로 나온다. 이유는 `no_sdo_info`, `dict_not_ready`(대기 시간 초과), `dict_error` 중 하나다.
 - **identity 비교**: vendor, product, revision은 항상 비교한다. serial은 SII 값이 0이 아닐 때만 비교한다. SII serial은 0인 장치가 많기 때문이다. serial 값 자체는 덤프하지 않는다.
 - **`errors`**: `[{key, index, subindex, abort_code, message}]` 또는 `[{key, index, subindex, error}]`. `key`는 실패한 읽기가 속한 JSON 키다.
 - **문자열**: 장치 문자열은 바이트열이다. 출력 가능한 ASCII가 아닌 바이트는 `\u00XX`로 기록한다.
@@ -121,6 +130,7 @@ cia402:
   "sii.strings": {"order": "SIM-SERVO-100", "group": "Servo Drives"},
   "sii.mailbox": ["CoE", "FoE"],
   "sii.sdo_info": true,
+  "sii.coe_details": {"pdo_assign": true, "pdo_config": true},
   "od.device_type": {"raw": "0x00020192", "profile": 402, "type_code": "0x02", "type": "servo_drive"},
   "od.identity_match": true,
   "od.name_ver": {"device_name": "SimServo", "hardware_version": "HW1.0"},
@@ -167,6 +177,7 @@ non_coe:
   "sii.strings": {"name": "SimIn2", "order": "SIM-IN2", "group": "DigIn"},
   "sii.mailbox": [],
   "sii.sdo_info": false,
+  "sii.coe_details": {"pdo_assign": false, "pdo_config": false},
   "sii.pdo": {"rxpdo": [],
     "txpdo": [
       {"index": "0x1a00", "name": "Channel 1", "sm": 0, "entries": [
@@ -174,6 +185,9 @@ non_coe:
       ]},
       {"index": "0x1a01", "name": "Channel 2", "sm": 0, "entries": [
         {"index": "0x6010", "subindex": 1, "bit_len": 1, "data_type": "BOOLEAN", "name": "Input"}
+      ]},
+      {"index": "0x1a02", "name": null, "sm": null, "entries": [
+        {"index": "0x6020", "subindex": 1, "bit_len": 1, "data_type": "BOOLEAN", "name": "Input"}
       ]}
     ]},
   "errors": []
@@ -184,7 +198,7 @@ non_coe:
 
 | 정보 | 출처 | 이유 |
 |---|---|---|
-| identity, name/order/group, mailbox, General 유무, SDO Info 비트 | `EC_IOCTL_SLAVE` (`ecsdo_read_dict`, `ecsdo_read_sii_info`) | 마스터가 이미 파싱하고 검증한 값이다. 예를 들어 mailbox 설정이 잘못되면 마스터가 0으로 만든다 |
+| identity, name/order/group, mailbox, General 유무, CoE Details 비트(SDO Info, PDO Assign, PDO Config) | `EC_IOCTL_SLAVE` (`ecsdo_read_dict`, `ecsdo_read_sii_info`) | 마스터가 이미 파싱하고 검증한 값이다. 예를 들어 mailbox 설정이 잘못되면 마스터가 0으로 만든다 |
 | SII PDO, SyncM | `EC_IOCTL_SLAVE_SII_READ` → `ecsdo_sii_parse` | 마스터의 `EC_IOCTL_SLAVE_SYNC*`로는 얻을 수 없다. CoE 장치는 스캔 때 CoE에서 읽은 PDO로 덮어쓰이고, 엔트리 data_type은 파싱할 때 버려진다 |
 | OD 값 | `ecsdo_upload` (raw, 이 프로그램에서 해석) | SDO Info가 없어도 읽을 수 있다 |
 | 객체 이름, 타입, 권한 | `ecsdo_read_dict` | `ethercat sdos`와 같은 사전 |

@@ -1,0 +1,128 @@
+{
+  "_note": "형식 확인용 가상 데이터. 실제 덤프와 값이 다를 수 있음",
+  "position": 4,
+  "branch": "non_coe",
+  "sii.identity": {
+    "vendor_id": "0x00000002",
+    "product_code": "0x03F03052",
+    "revision": "0x00000001"
+  },
+  "sii.vendor_name": null,
+  "sii.strings": {
+    "name": "EL1008 8Ch. Dig. Input 24V, 3ms",
+    "order": "EL1008",
+    "group": "DigIn"
+  },
+  "sii.mailbox": [],
+  "sii.sdo_info": null,
+  "sii.pdo": {
+    "rxpdo": [],
+    "txpdo": [
+      {
+        "index": "0x1a00",
+        "entries": [
+          {
+            "index": "0x6000",
+            "subindex": 1,
+            "bit_len": 1,
+            "name": "Input",
+            "data_type": "BOOL"
+          }
+        ],
+        "sm": 3
+      },
+      {
+        "index": "0x1a01",
+        "entries": [
+          {
+            "index": "0x6010",
+            "subindex": 1,
+            "bit_len": 1,
+            "name": "Input",
+            "data_type": "BOOL"
+          }
+        ],
+        "sm": 3
+      },
+      {
+        "index": "0x1a02",
+        "entries": [
+          {
+            "index": "0x6020",
+            "subindex": 1,
+            "bit_len": 1,
+            "name": "Input",
+            "data_type": "BOOL"
+          }
+        ],
+        "sm": 3
+      },
+      {
+        "index": "0x1a03",
+        "entries": [
+          {
+            "index": "0x6030",
+            "subindex": 1,
+            "bit_len": 1,
+            "name": "Input",
+            "data_type": "BOOL"
+          }
+        ],
+        "sm": 3
+      },
+      {
+        "index": "0x1a04",
+        "entries": [
+          {
+            "index": "0x6040",
+            "subindex": 1,
+            "bit_len": 1,
+            "name": "Input",
+            "data_type": "BOOL"
+          }
+        ],
+        "sm": 3
+      },
+      {
+        "index": "0x1a05",
+        "entries": [
+          {
+            "index": "0x6050",
+            "subindex": 1,
+            "bit_len": 1,
+            "name": "Input",
+            "data_type": "BOOL"
+          }
+        ],
+        "sm": 3
+      },
+      {
+        "index": "0x1a06",
+        "entries": [
+          {
+            "index": "0x6060",
+            "subindex": 1,
+            "bit_len": 1,
+            "name": "Input",
+            "data_type": "BOOL"
+          }
+        ],
+        "sm": 3
+      },
+      {
+        "index": "0x1a07",
+        "entries": [
+          {
+            "index": "0x6070",
+            "subindex": 1,
+            "bit_len": 1,
+            "name": "Input",
+            "data_type": "BOOL"
+          }
+        ],
+        "sm": 3
+      }
+    ]
+  },
+  "errors": []
+}
