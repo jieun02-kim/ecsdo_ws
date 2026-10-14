@@ -93,6 +93,8 @@ int ecsdo_io_slave(int fd, uint16_t position, ecsdo_io_slave_t *out)
     out->mailbox_protocols = s->mailbox_protocols;
     out->has_general_category = s->has_general_category;
     out->enable_sdo_info = s->enable_sdo_info;
+    out->enable_pdo_assign = s->enable_pdo_assign;
+    out->enable_pdo_configuration = s->enable_pdo_configuration;
     out->al_state = s->al_state;
     out->sdo_count = (uint16_t) s->visible_objects;
     out->sii_nwords = (uint32_t) (s->sii_size / 2);

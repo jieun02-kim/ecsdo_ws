@@ -28,6 +28,7 @@
 #endif
 
 #define VENDOR_OBJECTS_MAX 150
+#define OBJECTS_MAX 300                /* od.objects (other_profile) */
 #define STR_BUF 256
 
 /* Device type 0x1000 profiles. */
@@ -477,6 +478,13 @@ static void json_sii_basic(FILE *f, const probe_t *p, int with_name)
         fputs("null", f);
     else
         fputs(p->info.enable_sdo_info ? "true" : "false", f);
+    fputs(",\n  \"sii.coe_details\": ", f);
+    if (!p->info.has_general_category)
+        fputs("null", f);
+    else
+        fprintf(f, "{\"pdo_assign\": %s, \"pdo_config\": %s}",
+                p->info.enable_pdo_assign ? "true" : "false",
+                p->info.enable_pdo_configuration ? "true" : "false");
     fputs(",\n", f);
 }
 
@@ -775,7 +783,38 @@ static void json_profile(FILE *f, const probe_t *p)
             total > VENDOR_OBJECTS_MAX ? "true" : "false");
 }
 
-/* sii.pdo: default-assigned SII PDOs of the given directions. */
+/* od.objects (other_profile): no profile to split the dictionary by, so
+ * every object in 0x2000-0x9FFF with its metadata, up to OBJECTS_MAX. */
+
+static void json_objects(FILE *f, const probe_t *p)
+{
+    const ecsdo_slave_t *s = p->dict;
+    const char *why = dict_unavailable(s);
+    size_t i, n, total;
+
+    if (why) {
+        fprintf(f, "  \"od.objects\": {\"unavailable\": \"%s\"},\n", why);
+        return;
+    }
+    fputs("  \"od.objects\": {\"objects\": [", f);
+    for (i = 0, n = 0, total = 0; i < s->object_count; i++) {
+        const ecsdo_object_t *o = &s->objects[i];
+
+        if (o->index < 0x2000 || o->index > 0x9FFF)
+            continue;
+        if (total++ >= OBJECTS_MAX)
+            continue;
+        fputs(n++ ? ",\n    " : "\n    ", f);
+        json_object_meta(f, o);
+    }
+    fprintf(f, "%s], \"total\": %zu, \"truncated\": %s},\n",
+            n ? "\n  " : "", total,
+            total > OBJECTS_MAX ? "true" : "false");
+}
+
+/* sii.pdo: all SII PDOs of the given directions. Ones not assigned by
+ * default (SM 0xFF) have "sm": null: they are the alternatives a device
+ * with fixed PDO contents offers. */
 
 static void json_sii_pdo_dir(FILE *f, const ecsdo_sii_t *sii,
         ecsdo_sii_pdo_dir_t dir)
@@ -786,12 +825,15 @@ static void json_sii_pdo_dir(FILE *f, const ecsdo_sii_t *sii,
     for (i = 0; i < sii->pdo_count; i++) {
         const ecsdo_sii_pdo_t *pdo = &sii->pdos[i];
 
-        if (pdo->dir != dir || pdo->sync_index < 0)
+        if (pdo->dir != dir)
             continue;
         fprintf(f, "%s\n      {\"index\": \"0x%04x\", \"name\": ",
                 n++ ? "," : "", pdo->index);
         json_str_or_null(f, pdo->name);
-        fprintf(f, ", \"sm\": %d, \"entries\": [", pdo->sync_index);
+        if (pdo->sync_index < 0)
+            fputs(", \"sm\": null, \"entries\": [", f);
+        else
+            fprintf(f, ", \"sm\": %d, \"entries\": [", pdo->sync_index);
         for (j = 0; j < pdo->entry_count; j++) {
             const ecsdo_sii_pdo_entry_t *e = &pdo->entries[j];
 
@@ -836,8 +878,12 @@ static void json_sii_pdo(FILE *f, const probe_t *p, int rx, int tx)
 static int write_json(const char *path, const probe_t *p)
 {
     int cia402 = !strcmp(p->branch, "cia402");
-    int od_path = cia402 || !strcmp(p->branch, "mdp")
-        || !strcmp(p->branch, "other_profile");
+    int other = !strcmp(p->branch, "other_profile");
+    int od_path = cia402 || other || !strcmp(p->branch, "mdp");
+    /* PDO assignment writable but contents fixed: the SII PDOs are the
+     * sets to choose from. */
+    int fixed_sets = p->info.enable_pdo_assign
+        && !p->info.enable_pdo_configuration;
     FILE *f = fopen(path, "w");
 
     if (!f)
@@ -845,7 +891,7 @@ static int write_json(const char *path, const probe_t *p)
     fprintf(f, "{\n  \"position\": %u,\n  \"branch\": \"%s\",\n",
             p->position, p->branch);
     /* The OD device name replaces the SII one when it was read. */
-    json_sii_basic(f, p, !(cia402 && p->name_ver[0]));
+    json_sii_basic(f, p, !((cia402 || other) && p->name_ver[0]));
 
     if (!strcmp(p->branch, "non_coe"))
         json_sii_pdo(f, p, 1, 1);
@@ -858,7 +904,24 @@ static int write_json(const char *path, const probe_t *p)
         json_od_pdos(f, p, "od.rxpdo", &p->rx);
         json_od_pdos(f, p, "od.txpdo", &p->tx);
         json_profile(f, p);
-        json_sii_pdo(f, p, !p->rx.ok, !p->tx.ok);
+        json_sii_pdo(f, p, fixed_sets || !p->rx.ok, fixed_sets || !p->tx.ok);
+    }
+    if (other) {
+        /* No profile: the names in the PDOs and the dictionary are all
+         * there is to go on, so give all of them. */
+        json_identity(f, p);
+        json_name_ver(f, p);
+        json_od_pdos(f, p, "od.rxpdo", &p->rx);
+        json_od_pdos(f, p, "od.txpdo", &p->tx);
+        json_objects(f, p);
+        json_sii_pdo(f, p, 1, 1);
+    }
+    if (!strcmp(p->branch, "mdp")) {
+        /* No name/role conventions to lean on: give both the assigned
+         * PDOs and the SII defaults (with PDO names). */
+        json_od_pdos(f, p, "od.rxpdo", &p->rx);
+        json_od_pdos(f, p, "od.txpdo", &p->tx);
+        json_sii_pdo(f, p, 1, 1);
     }
     json_errors(f, p);
     fputs("}\n", f);
@@ -882,7 +945,8 @@ static void log_step(const char *fmt, ...)
     fputc('\n', stdout);
 }
 
-static void read_od_cia402(ecsdo_ctx_t *ctx, probe_t *p)
+/** 7, 8, 10, 11 (cia402, other_profile); 9 for cia402 only. */
+static void read_od_device(ecsdo_ctx_t *ctx, probe_t *p, int cia402)
 {
     static const char *const nv_key = "od.name_ver";
     int i;
@@ -893,7 +957,8 @@ static void read_od_cia402(ecsdo_ctx_t *ctx, probe_t *p)
     for (i = 0; i < 3; i++)
         p->name_ver[i] = upload_string(ctx, p, nv_key,
                 (uint16_t) (0x1008 + i));
-    read_opt_u32(ctx, p, "od.drive_modes", 0x6502, 0, &p->drive_modes);
+    if (cia402)
+        read_opt_u32(ctx, p, "od.drive_modes", 0x6502, 0, &p->drive_modes);
     read_od_pdos(ctx, p, "od.rxpdo", 0x1C12, &p->rx);
     read_od_pdos(ctx, p, "od.txpdo", 0x1C13, &p->tx);
 }
@@ -980,8 +1045,12 @@ static int probe_slave(ecsdo_ctx_t *ctx, uint16_t pos, const char *dir)
         log_step("4. 0x1000 = 0x%08x, profile %u -> %s",
                 p.device_type.value, profile, p.branch);
     }
-    if (!strcmp(p.branch, "cia402"))
-        read_od_cia402(ctx, &p);
+    if (!strcmp(p.branch, "cia402") || !strcmp(p.branch, "other_profile"))
+        read_od_device(ctx, &p, !strcmp(p.branch, "cia402"));
+    else if (!strcmp(p.branch, "mdp")) {
+        read_od_pdos(ctx, &p, "od.rxpdo", 0x1C12, &p.rx);
+        read_od_pdos(ctx, &p, "od.txpdo", 0x1C13, &p.tx);
+    }
 
 write:
     snprintf(path, sizeof(path), "%s/slave_%u.json", dir, pos);
