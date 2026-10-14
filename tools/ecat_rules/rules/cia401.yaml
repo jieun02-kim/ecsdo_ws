@@ -1,0 +1,29 @@
+# CiA401 범용 I/O rule (CANopen 기준 객체 배치, EtherCAT 장치는 드묾 - 실장비 검증 필요)
+id: cia401
+profile: 401
+description: CiA401 범용 디지털·아날로그 I/O
+
+default:
+  extras: []
+  pdo: keep_current
+
+# ---------------------------------------------------------------- 필수 항목
+# 장치에 있는 객체만 채널로 등록한다. 묶음 객체는 비트마다 채널 1개.
+required:
+  tx:
+    - {role: digital_input,  index: 0x6000, group_bits: 8,  note: 8비트 묶음 입력}
+    - {role: digital_input,  index: 0x6100, group_bits: 16, note: 16비트 묶음 입력}
+    - {role: digital_input,  index: 0x6120, group_bits: 32, note: 32비트 묶음 입력}
+    - {role: analog_input,   index: 0x6401, bits: 16, note: 16비트 아날로그 입력}
+  rx:
+    - {role: digital_output, index: 0x6200, group_bits: 8,  note: 8비트 묶음 출력}
+    - {role: digital_output, index: 0x6300, group_bits: 16, note: 16비트 묶음 출력}
+    - {role: digital_output, index: 0x6320, group_bits: 32, note: 32비트 묶음 출력}
+    - {role: analog_output,  index: 0x6411, bits: 16, note: 16비트 아날로그 출력}
+
+# ---------------------------------------------------------------- 추가 항목
+extras:
+  error_detect:
+    description: 장치 에러 상태 (발생 시 SDO로 읽음)
+    on_event:
+      - {role: error_register, index: 0x1001, sub: 0, bits: 8, type: UINT8}

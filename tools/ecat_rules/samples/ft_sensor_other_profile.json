@@ -1,0 +1,205 @@
+{
+  "_note": "libecsdo probe_sim(가짜 버스)의 slave 5 출력. 실제 장비가 아님",
+  "position": 5,
+  "branch": "other_profile",
+  "sii.identity": {
+    "vendor_id": "0x00005678",
+    "product_code": "0x00000006",
+    "revision": "0x00000001"
+  },
+  "sii.vendor_name": null,
+  "sii.strings": {
+    "order": "SIM-FT6",
+    "group": "Sensors"
+  },
+  "sii.mailbox": [
+    "CoE"
+  ],
+  "sii.sdo_info": true,
+  "sii.coe_details": {
+    "pdo_assign": true,
+    "pdo_config": false
+  },
+  "od.device_type": {
+    "raw": "0x00000000",
+    "profile": 0,
+    "additional_info": "0x0000"
+  },
+  "od.identity_match": true,
+  "od.name_ver": {
+    "device_name": "SimFT6"
+  },
+  "od.rxpdo": {
+    "basis": "assigned",
+    "pdos": [
+      {
+        "index": "0x1600",
+        "entries": [
+          {
+            "index": "0x7000",
+            "subindex": 1,
+            "bit_len": 16,
+            "data_type": "UNSIGNED16",
+            "name": "Control",
+            "entry_name": "Command"
+          }
+        ]
+      }
+    ]
+  },
+  "od.txpdo": {
+    "basis": "assigned",
+    "pdos": [
+      {
+        "index": "0x1a00",
+        "entries": [
+          {
+            "index": "0x6000",
+            "subindex": 1,
+            "bit_len": 32,
+            "data_type": "INTEGER32",
+            "name": "Force",
+            "entry_name": "Force X"
+          },
+          {
+            "index": "0x6000",
+            "subindex": 2,
+            "bit_len": 32,
+            "data_type": "INTEGER32",
+            "name": "Force",
+            "entry_name": "Force Y"
+          },
+          {
+            "index": "0x6000",
+            "subindex": 3,
+            "bit_len": 32,
+            "data_type": "INTEGER32",
+            "name": "Force",
+            "entry_name": "Force Z"
+          }
+        ]
+      }
+    ]
+  },
+  "od.objects": {
+    "objects": [
+      {
+        "index": "0x2000",
+        "name": "Filter frequency",
+        "data_type": "UNSIGNED16",
+        "access": "rw"
+      },
+      {
+        "index": "0x6000",
+        "name": "Force",
+        "data_type": "RECORD",
+        "entries": 3,
+        "sub1_type": "INTEGER32",
+        "access": "ro"
+      },
+      {
+        "index": "0x6010",
+        "name": "Status",
+        "data_type": "RECORD",
+        "entries": 1,
+        "sub1_type": "UNSIGNED32",
+        "access": "ro"
+      },
+      {
+        "index": "0x7000",
+        "name": "Control",
+        "data_type": "RECORD",
+        "entries": 1,
+        "sub1_type": "UNSIGNED16",
+        "access": "rw"
+      }
+    ],
+    "total": 4,
+    "truncated": false
+  },
+  "sii.pdo": {
+    "rxpdo": [
+      {
+        "index": "0x1600",
+        "name": "Control",
+        "sm": 2,
+        "entries": [
+          {
+            "index": "0x7000",
+            "subindex": 1,
+            "bit_len": 16,
+            "data_type": "UNSIGNED16",
+            "name": "Command"
+          }
+        ]
+      }
+    ],
+    "txpdo": [
+      {
+        "index": "0x1a00",
+        "name": "Forces",
+        "sm": 3,
+        "entries": [
+          {
+            "index": "0x6000",
+            "subindex": 1,
+            "bit_len": 32,
+            "data_type": "INTEGER32",
+            "name": "Force X"
+          },
+          {
+            "index": "0x6000",
+            "subindex": 2,
+            "bit_len": 32,
+            "data_type": "INTEGER32",
+            "name": "Force Y"
+          },
+          {
+            "index": "0x6000",
+            "subindex": 3,
+            "bit_len": 32,
+            "data_type": "INTEGER32",
+            "name": "Force Z"
+          }
+        ]
+      },
+      {
+        "index": "0x1a01",
+        "name": "Status",
+        "sm": null,
+        "entries": [
+          {
+            "index": "0x6010",
+            "subindex": 1,
+            "bit_len": 32,
+            "data_type": "UNSIGNED32",
+            "name": "Sensor status"
+          }
+        ]
+      }
+    ]
+  },
+  "errors": [
+    {
+      "key": "od.identity_match",
+      "index": "0x1018",
+      "subindex": 4,
+      "abort_code": "0x06020000",
+      "message": "Object does not exist in the object dictionary"
+    },
+    {
+      "key": "od.name_ver",
+      "index": "0x1009",
+      "subindex": 0,
+      "abort_code": "0x06020000",
+      "message": "Object does not exist in the object dictionary"
+    },
+    {
+      "key": "od.name_ver",
+      "index": "0x100a",
+      "subindex": 0,
+      "abort_code": "0x06020000",
+      "message": "Object does not exist in the object dictionary"
+    }
+  ]
+}

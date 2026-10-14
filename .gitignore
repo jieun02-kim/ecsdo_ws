@@ -3,3 +3,6 @@ install/
 *.tar.gz
 .vscode/
 dump/
+plans/
+llm_out/
+__pycache__/

@@ -1,0 +1,184 @@
+{
+  "_note": "형식 확인용 가상 데이터. 실제 덤프와 값이 다를 수 있음",
+  "position": 6,
+  "branch": "mdp",
+  "sii.identity": {
+    "vendor_id": "0x00000002",
+    "product_code": "0x0C1E3052",
+    "revision": "0x00000001"
+  },
+  "sii.vendor_name": null,
+  "sii.strings": {
+    "name": "EL3102 2Ch. Ana. Input +/-10V, Diff.",
+    "order": "EL3102",
+    "group": "AnaIn"
+  },
+  "sii.mailbox": [
+    "CoE"
+  ],
+  "sii.sdo_info": true,
+  "od.device_type": {
+    "raw": "0x00001389",
+    "profile": 5001
+  },
+  "od.rxpdo": {
+    "basis": "assigned",
+    "pdos": []
+  },
+  "od.txpdo": {
+    "basis": "assigned",
+    "pdos": [
+      {
+        "index": "0x1A00",
+        "entries": [
+          {
+            "index": "0x6000",
+            "subindex": 1,
+            "bit_len": 1,
+            "name": "AI Standard Ch.1",
+            "data_type": "BOOL",
+            "entry_name": "Underrange"
+          },
+          {
+            "index": "0x6000",
+            "subindex": 2,
+            "bit_len": 1,
+            "name": "AI Standard Ch.1",
+            "data_type": "BOOL",
+            "entry_name": "Overrange"
+          },
+          {
+            "index": "0x6000",
+            "subindex": 3,
+            "bit_len": 2,
+            "name": "AI Standard Ch.1",
+            "data_type": "BIT2",
+            "entry_name": "Limit 1"
+          },
+          {
+            "index": "0x6000",
+            "subindex": 5,
+            "bit_len": 2,
+            "name": "AI Standard Ch.1",
+            "data_type": "BIT2",
+            "entry_name": "Limit 2"
+          },
+          {
+            "index": "0x6000",
+            "subindex": 7,
+            "bit_len": 1,
+            "name": "AI Standard Ch.1",
+            "data_type": "BOOL",
+            "entry_name": "Error"
+          },
+          {
+            "index": "0x0000",
+            "subindex": 0,
+            "bit_len": 7,
+            "gap": true
+          },
+          {
+            "index": "0x6000",
+            "subindex": 15,
+            "bit_len": 1,
+            "name": "AI Standard Ch.1",
+            "data_type": "BOOL",
+            "entry_name": "TxPDO State"
+          },
+          {
+            "index": "0x6000",
+            "subindex": 16,
+            "bit_len": 1,
+            "name": "AI Standard Ch.1",
+            "data_type": "BOOL",
+            "entry_name": "TxPDO Toggle"
+          },
+          {
+            "index": "0x6000",
+            "subindex": 17,
+            "bit_len": 16,
+            "name": "AI Standard Ch.1",
+            "data_type": "INT16",
+            "entry_name": "Value"
+          }
+        ]
+      },
+      {
+        "index": "0x1A02",
+        "entries": [
+          {
+            "index": "0x6010",
+            "subindex": 1,
+            "bit_len": 1,
+            "name": "AI Standard Ch.2",
+            "data_type": "BOOL",
+            "entry_name": "Underrange"
+          },
+          {
+            "index": "0x6010",
+            "subindex": 2,
+            "bit_len": 1,
+            "name": "AI Standard Ch.2",
+            "data_type": "BOOL",
+            "entry_name": "Overrange"
+          },
+          {
+            "index": "0x6010",
+            "subindex": 3,
+            "bit_len": 2,
+            "name": "AI Standard Ch.2",
+            "data_type": "BIT2",
+            "entry_name": "Limit 1"
+          },
+          {
+            "index": "0x6010",
+            "subindex": 5,
+            "bit_len": 2,
+            "name": "AI Standard Ch.2",
+            "data_type": "BIT2",
+            "entry_name": "Limit 2"
+          },
+          {
+            "index": "0x6010",
+            "subindex": 7,
+            "bit_len": 1,
+            "name": "AI Standard Ch.2",
+            "data_type": "BOOL",
+            "entry_name": "Error"
+          },
+          {
+            "index": "0x0000",
+            "subindex": 0,
+            "bit_len": 7,
+            "gap": true
+          },
+          {
+            "index": "0x6010",
+            "subindex": 15,
+            "bit_len": 1,
+            "name": "AI Standard Ch.2",
+            "data_type": "BOOL",
+            "entry_name": "TxPDO State"
+          },
+          {
+            "index": "0x6010",
+            "subindex": 16,
+            "bit_len": 1,
+            "name": "AI Standard Ch.2",
+            "data_type": "BOOL",
+            "entry_name": "TxPDO Toggle"
+          },
+          {
+            "index": "0x6010",
+            "subindex": 17,
+            "bit_len": 16,
+            "name": "AI Standard Ch.2",
+            "data_type": "INT16",
+            "entry_name": "Value"
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

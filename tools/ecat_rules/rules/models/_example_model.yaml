@@ -1,0 +1,18 @@
+# 모델 rule 예시 (Vendor ID + 0x1008 Device Name으로 매칭)
+# 프로파일 rule 위에 덮어쓰거나 추가한다. LLM이 만든 rule 후보도 승인 후 이 형식으로 저장한다.
+# 아래 값은 형식 예시다. 실제 장비 덤프로 확인한 뒤 파일 이름을 바꿔 사용한다.
+match:
+  vendor_id: 0x00000000
+  device_name: "EXAMPLE"      # 0x1008, 없으면 SII 주문번호
+base_rule: cia402
+
+extras:
+  vendor_alarm:
+    description: 벤더 알람 코드 (발생 시 SDO로 읽음)
+    on_event:
+      - {role: vendor_alarm_code, index: 0x0000, sub: 0, bits: 16, type: UINT16}
+
+remap:
+  rx_pdo: 0x1600
+  tx_pdo: 0x1A00
+  axis_step: 0x10            # 다축 장치의 축별 PDO 번호 간격

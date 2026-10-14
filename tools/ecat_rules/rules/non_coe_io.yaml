@@ -1,0 +1,29 @@
+# CoE 미지원 I/O rule (SII 기본 PDO만 있는 장치, 예: Beckhoff EL1xxx/EL2xxx)
+# OD가 없으므로 SII PDO 엔트리의 index 범위, 비트 길이, 이름으로만 판단한다.
+# PDO는 바꿀 수 없으므로 항상 SII PDO 그대로 쓴다.
+id: non_coe_io
+match: {coe: false, has_pdo: true}
+description: CoE 미지원 디지털·아날로그 I/O
+
+default:
+  extras: []
+  pdo: keep_sii
+
+# ---------------------------------------------------------------- 필수 항목
+required:
+  input_range:  [0x6000, 0x6FFF]   # Beckhoff 관례 (범위 밖이면 경고만)
+  output_range: [0x7000, 0x7FFF]
+  channel_patterns:
+    - {role: digital_input,  dir: tx, bits: 1}
+    - {role: digital_output, dir: rx, bits: 1}
+    - {role: analog_input,   dir: tx, bits: [16, 32]}
+    - {role: analog_output,  dir: rx, bits: [16, 32]}
+
+# ---------------------------------------------------------------- 추가 항목
+extras:
+  channel_status:
+    description: 상태 비트 (SII PDO 엔트리 이름으로 찾음)
+    name_any: [underrange, overrange, limit, error, state, toggle]
+
+# 분류되지 않는 엔트리가 있으면 LLM 판별 대상
+fallback: llm

@@ -1,0 +1,19 @@
+{
+  "_note": "형식 확인용 가상 데이터. 실제 덤프와 값이 다를 수 있음",
+  "position": 7,
+  "branch": "infrastructure",
+  "sii.identity": {
+    "vendor_id": "0x00000002",
+    "product_code": "0x044C2C52",
+    "revision": "0x00000001"
+  },
+  "sii.vendor_name": null,
+  "sii.strings": {
+    "name": "EK1100 EtherCAT-Koppler (2A E-Bus)",
+    "order": "EK1100",
+    "group": "SystemBk"
+  },
+  "sii.mailbox": [],
+  "sii.sdo_info": null,
+  "errors": []
+}

@@ -1,0 +1,40 @@
+# ETG.5001 MDP(모듈형 장치) I/O rule
+# 고정 index가 아니라 index 범위와 엔트리 패턴으로 채널을 찾는다.
+# MDP 관례: 채널 n 입력 = 0x6000 + 0x10*n, 출력 = 0x7000 + 0x10*n
+id: mdp5001
+profile: 5001
+description: MDP 모듈형 장치 (Beckhoff EL 터미널 등, CoE 지원)
+
+# 의도 입력이 없을 때 = 현재 PDO 그대로, 채널만 해석
+default:
+  extras: []
+  pdo: keep_current
+
+# ---------------------------------------------------------------- 필수 항목
+# 장치의 PDO 엔트리 중 아래 패턴에 맞는 것을 채널로 등록한다
+required:
+  input_range:  [0x6000, 0x6FFF]   # TxPDO
+  output_range: [0x7000, 0x7FFF]   # RxPDO
+  channel_patterns:
+    - {role: digital_input,  dir: tx, bits: 1}
+    - {role: digital_output, dir: rx, bits: 1}
+    - {role: analog_input,   dir: tx, bits: [16, 32], name_any: [value, input]}
+    - {role: analog_output,  dir: rx, bits: [16, 32], name_any: [value, output]}
+
+# ---------------------------------------------------------------- 추가 항목
+extras:
+  channel_status:
+    description: 채널별 상태 비트 (범위 초과, 에러 등). PDO 엔트리 이름으로 찾음
+    name_any: [underrange, overrange, limit, error, txpdo state, txpdo toggle, sync error]
+
+  module_info:
+    description: 모듈 구성 확인 (발생 시 SDO로 읽음)
+    on_event:
+      - {role: configured_modules, index: 0xF030, note: 설정된 모듈 ID 목록}
+      - {role: detected_modules,   index: 0xF050, note: 감지된 모듈 ID 목록}
+
+  diagnosis:
+    description: 진단 정보 (발생 시 SDO로 읽음, 모델별로 내용이 다름)
+    on_event:
+      - {role: channel_info,      index_range: [0x9000, 0x9FFF]}
+      - {role: channel_diagnosis, index_range: [0xA000, 0xAFFF]}

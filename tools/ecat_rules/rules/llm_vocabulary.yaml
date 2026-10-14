@@ -1,0 +1,43 @@
+# LLM 제약용 공통 목록
+# LLM 출력의 JSON 스키마 선택지를 이 파일과 각 rule 파일에서 자동으로 만든다.
+# 형태와 역할 이름은 RAON-RT cfg 항목 기준으로 확정 필요.
+
+device_classes:
+  - servo_drive
+  - stepper_drive
+  - multi_axis_drive
+  - digital_input
+  - digital_output
+  - digital_io
+  - analog_input
+  - analog_output
+  - encoder
+  - force_torque_sensor
+  - other_sensor
+  - infrastructure
+  - unknown
+
+# 형태별 허용 역할 (프로파일 rule이 있는 형태는 그 rule의 역할 이름을 그대로 씀)
+roles:
+  servo_drive:   {from_rule: cia402}
+  stepper_drive: {from_rule: cia402}
+  multi_axis_drive: {from_rule: cia402}
+  digital_input:  [digital_input, channel_status]
+  digital_output: [digital_output, channel_status]
+  digital_io:     [digital_input, digital_output, channel_status]
+  analog_input:   [analog_input, channel_status]
+  analog_output:  [analog_output, channel_status]
+  encoder:        [position_value, velocity_value, latch_value, encoder_status, encoder_control]
+  force_torque_sensor: [force_x, force_y, force_z, torque_x, torque_y, torque_z, sensor_status, sensor_control]
+  other_sensor:   [measured_value, sensor_status, sensor_control]
+  common:         [unknown]
+
+# 방향 규칙 (검증용): 측정·상태는 TxPDO, 지령·출력은 RxPDO
+direction:
+  tx: [status_word, actual_position, actual_velocity, actual_torque, actual_current, error_code,
+       mode_display, following_error, digital_inputs, touch_probe_status, touch_probe_pos1_pos,
+       digital_input, analog_input, channel_status, position_value, velocity_value, latch_value,
+       encoder_status, force_x, force_y, force_z, torque_x, torque_y, torque_z, sensor_status, measured_value]
+  rx: [control_word, target_position, target_velocity, target_torque, mode_of_operation,
+       velocity_offset, torque_offset, digital_outputs, touch_probe_function, digital_output,
+       analog_output, encoder_control, sensor_control]
