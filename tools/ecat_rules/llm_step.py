@@ -49,13 +49,13 @@ class LLMError(RuntimeError):
 
 
 def ollama_chat(host: str, model: str, prompt: str, schema: dict, timeout: float = 300) -> dict:
-    """JSON 스키마로 출력을 강제해서 한 번 호출한다. temperature 0, thinking 끔."""
+    """JSON 스키마로 출력을 강제해서 한 번 호출한다. temperature 0, seed 42, thinking 끔."""
     body = {
         "model": model,
         "stream": False,
         "think": False,
         "format": schema,
-        "options": {"temperature": 0},
+        "options": {"temperature": 0, "seed": 42},
         "messages": [{"role": "system", "content": SYSTEM}, {"role": "user", "content": prompt}],
     }
     req = urllib.request.Request(f"{host}/api/chat", data=json.dumps(body).encode(),

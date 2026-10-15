@@ -73,7 +73,7 @@ python3 -m unittest discover -s tests
 | rule 적용, 분류 못 한 엔트리 있음 | 남은 엔트리의 역할 | 그 rule을 `base_rule`로 한 모델 rule |
 | cia402, 필수 객체 없음 | 빠진 역할마다 대체할 벤더 객체 또는 none | 모드 필수 목록을 바꾼 모델 rule |
 
-- **모델:** 기본 모델은 `qwen3.5:4b`다(`--model`, `--host`로 바꿀 수 있음). temperature 0, thinking 끔.
+- **모델:** 기본 모델은 `qwen3.5:4b`다(`--model`, `--host`로 바꿀 수 있음). temperature 0, seed 42, thinking 끔.
 - **출력 강제:** JSON 스키마로 선택지(`llm_vocabulary.yaml`, rule의 역할, 덤프의 벤더 객체 index) 안의 값만 나오게 강제한다.
 - **입력:** 장치 정보, 판단할 PDO 엔트리, 선택지만 넣는다. 덤프 전체를 넣지 않는다. 객체 이름은 참고용으로 최대 60개만 넣는다.
 - **검증:** 방향 규칙에 어긋난 역할은 코드가 `unknown`으로 돌리고 `problems`에 남긴다.
