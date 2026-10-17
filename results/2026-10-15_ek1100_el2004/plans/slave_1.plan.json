@@ -1,0 +1,96 @@
+{
+  "position": 1,
+  "branch": "non_coe",
+  "identity": {
+    "vendor_id": "0x00000002",
+    "product_code": "0x07D43052",
+    "device_name": "EL2004 4K. Dig. Ausgang 24V, 0.5A"
+  },
+  "rule": "non_coe_io",
+  "model_rule": null,
+  "request": {
+    "extras": []
+  },
+  "status": "matched",
+  "device_class": "digital_output",
+  "count": 4,
+  "action": "keep_sii",
+  "pdo_source": "sii",
+  "rx": [
+    {
+      "pdo": "0x1600",
+      "index": "0x7000",
+      "subindex": 1,
+      "bit_len": 1,
+      "bit_offset": 0,
+      "name": "Output",
+      "role": "digital_output[0]"
+    },
+    {
+      "pdo": "0x1601",
+      "index": "0x7010",
+      "subindex": 1,
+      "bit_len": 1,
+      "bit_offset": 1,
+      "name": "Output",
+      "role": "digital_output[1]"
+    },
+    {
+      "pdo": "0x1602",
+      "index": "0x7020",
+      "subindex": 1,
+      "bit_len": 1,
+      "bit_offset": 2,
+      "name": "Output",
+      "role": "digital_output[2]"
+    },
+    {
+      "pdo": "0x1603",
+      "index": "0x7030",
+      "subindex": 1,
+      "bit_len": 1,
+      "bit_offset": 3,
+      "name": "Output",
+      "role": "digital_output[3]"
+    }
+  ],
+  "tx": [],
+  "rx_bits": 4,
+  "tx_bits": 0,
+  "missing_required": [],
+  "missing_extras": [],
+  "on_event": [],
+  "sdo_writes": [],
+  "needs_llm": false,
+  "notes": [],
+  "channels": [
+    {
+      "role": "digital_output",
+      "channel": 0,
+      "index": "0x7000",
+      "subindex": 1,
+      "bit_len": 1
+    },
+    {
+      "role": "digital_output",
+      "channel": 1,
+      "index": "0x7010",
+      "subindex": 1,
+      "bit_len": 1
+    },
+    {
+      "role": "digital_output",
+      "channel": 2,
+      "index": "0x7020",
+      "subindex": 1,
+      "bit_len": 1
+    },
+    {
+      "role": "digital_output",
+      "channel": 3,
+      "index": "0x7030",
+      "subindex": 1,
+      "bit_len": 1
+    }
+  ]
+}

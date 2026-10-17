@@ -1,0 +1,26 @@
+{
+  "position": 1,
+  "branch": "non_coe",
+  "sii.identity": {"vendor_id": "0x00000002", "product_code": "0x07d43052", "revision": "0x00100000"},
+  "sii.vendor_name": "Beckhoff Automation GmbH & Co. KG",
+  "sii.strings": {"name": "EL2004 4K. Dig. Ausgang 24V, 0.5A", "order": "EL2004", "group": "DigOut"},
+  "sii.mailbox": [],
+  "sii.sdo_info": false,
+  "sii.coe_details": {"pdo_assign": false, "pdo_config": false},
+  "sii.pdo": {"rxpdo": [
+      {"index": "0x1600", "name": "Channel 1", "sm": 0, "entries": [
+        {"index": "0x7000", "subindex": 1, "bit_len": 1, "data_type": "BOOLEAN", "name": "Output"}
+      ]},
+      {"index": "0x1601", "name": "Channel 2", "sm": 0, "entries": [
+        {"index": "0x7010", "subindex": 1, "bit_len": 1, "data_type": "BOOLEAN", "name": "Output"}
+      ]},
+      {"index": "0x1602", "name": "Channel 3", "sm": 0, "entries": [
+        {"index": "0x7020", "subindex": 1, "bit_len": 1, "data_type": "BOOLEAN", "name": "Output"}
+      ]},
+      {"index": "0x1603", "name": "Channel 4", "sm": 0, "entries": [
+        {"index": "0x7030", "subindex": 1, "bit_len": 1, "data_type": "BOOLEAN", "name": "Output"}
+      ]}
+    ],
+    "txpdo": []},
+  "errors": []
+}

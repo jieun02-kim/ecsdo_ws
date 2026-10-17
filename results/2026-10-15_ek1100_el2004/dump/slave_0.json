@@ -1,0 +1,11 @@
+{
+  "position": 0,
+  "branch": "infrastructure",
+  "sii.identity": {"vendor_id": "0x00000002", "product_code": "0x044c2c52", "revision": "0x00120000"},
+  "sii.vendor_name": "Beckhoff Automation GmbH & Co. KG",
+  "sii.strings": {"name": "EK1100 EtherCAT-Koppler (2A E-Bus)", "order": "EK1100", "group": "SystemBk"},
+  "sii.mailbox": [],
+  "sii.sdo_info": false,
+  "sii.coe_details": {"pdo_assign": false, "pdo_config": false},
+  "errors": []
+}

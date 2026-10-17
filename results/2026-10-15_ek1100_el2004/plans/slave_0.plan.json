@@ -1,0 +1,34 @@
+{
+  "position": 0,
+  "branch": "infrastructure",
+  "identity": {
+    "vendor_id": "0x00000002",
+    "product_code": "0x044C2C52",
+    "device_name": "EK1100 EtherCAT-Koppler (2A E-Bus)"
+  },
+  "rule": "infrastructure",
+  "model_rule": null,
+  "request": null,
+  "status": "no_process_data",
+  "device_class": "infrastructure",
+  "count": null,
+  "action": "none",
+  "pdo_source": null,
+  "rx": [],
+  "tx": [],
+  "rx_bits": 0,
+  "tx_bits": 0,
+  "missing_required": [],
+  "missing_extras": [],
+  "on_event": [],
+  "sdo_writes": [],
+  "needs_llm": false,
+  "notes": [],
+  "record": {
+    "vendor_id": "0x00000002",
+    "product_code": "0x044C2C52",
+    "sii_name": "EK1100 EtherCAT-Koppler (2A E-Bus)",
+    "sii_order": "EK1100",
+    "position": 0
+  }
+}
